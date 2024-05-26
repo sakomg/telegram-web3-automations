@@ -1,0 +1,27 @@
+{
+  "name": "tg-app-automation",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "keywords": [
+    "tg",
+    "telegram",
+    "web3",
+    "crypto",
+    "mini",
+    "apps"
+  ],
+  "author": "Alexander Komegunov <alekomegunov@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@ptkdev/logger": "^1.8.0",
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "node-schedule": "^2.1.1",
+    "puppeteer": "^22.10.0"
+  }
+}
