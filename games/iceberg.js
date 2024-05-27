@@ -7,12 +7,15 @@ const playIcebergGame = async (browser, appUrl) => {
   const origin = await browser.newPage();
   const page = await preparePage(origin);
   await page.goto(appUrl, { waitUntil: 'networkidle0' });
-  await delay(1800);
-
-  await checkAndClickButton(page);
-
-  await delay(1200);
-  await page.close();
+  try {
+    await delay(1800);
+    await checkAndClickButton(page);
+    await delay(1200);
+  } catch (e) {
+    logger.error(e, 'iceberg');
+  } finally {
+    await page.close();
+  }
 };
 
 async function checkAndClickButton(page) {

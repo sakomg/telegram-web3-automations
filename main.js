@@ -8,7 +8,6 @@ import adsMobileProfile from './ads/profiles.js';
 import adsOpenBrowser from './ads/openBrowser.js';
 import playBlumGame from './games/blum.js';
 import playIcebergGame from './games/iceberg.js';
-import playYescoinGame from './games/yescoin.js';
 
 config();
 
@@ -20,7 +19,7 @@ const nextExecutionTime = new Date(Date.now() + randomDelay);
 
 execute();
 schedule.scheduleJob(nextExecutionTime, execute);
-logger.info(`scheduled on ${nextExecutionTime.toString()} UTC`);
+logger.info(`scheduled on ${nextExecutionTime.toString()}`);
 
 async function execute() {
   logger.info('start <execute> func', 'main');
@@ -66,9 +65,6 @@ async function defineAndRunApplication(browser, appName, appUrl) {
       break;
     case 'iceberg':
       await playIcebergGame(browser, appUrl);
-      break;
-    case 'yescoin':
-      await playYescoinGame(browser, appUrl);
       break;
     default:
       logger.warning(`[${appName}] don't supported yet`);
