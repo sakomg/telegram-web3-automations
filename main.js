@@ -12,8 +12,8 @@ import playIcebergGame from './games/iceberg.js';
 config();
 
 execute();
-// schedule.scheduleJob(generateExecutionTime(), execute);
-logger.info(`scheduled on ${generateExecutionTime('localString')}`);
+schedule.scheduleJob(generateExecutionTime(), execute);
+logger.info(`scheduled, first call in ${generateExecutionTime('localString')}`);
 
 async function execute() {
   logger.info('start <execute> func', 'main');

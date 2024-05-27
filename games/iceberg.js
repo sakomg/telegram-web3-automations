@@ -2,7 +2,7 @@ import { delay, getRandomDelayBetween, randomDelay } from '../utils/delay.js';
 import logger from '../logger/logger.js';
 
 const playIcebergGame = async (browser, appUrl) => {
-  logger.debug("🎮 i'm playing Iceberg");
+  logger.debug('🎮 Iceberg');
 
   const page = await browser.newPage();
   await page.waitForNetworkIdle();

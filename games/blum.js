@@ -3,7 +3,7 @@ import { delay, randomDelay } from '../utils/delay.js';
 import logger from '../logger/logger.js';
 
 const playBlumGame = async (browser, appUrl) => {
-  logger.debug("🎮 I'm playing Blum");
+  logger.debug('🎮 Blum');
 
   const page = await browser.newPage();
   await page.waitForNetworkIdle();
