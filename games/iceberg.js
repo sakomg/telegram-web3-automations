@@ -1,12 +1,12 @@
 import { delay, getRandomDelayBetween, randomDelay } from '../utils/delay.js';
-import { preparePage } from '../utils/puppeteerHelper.js';
 import logger from '../logger/logger.js';
 
 const playIcebergGame = async (browser, appUrl) => {
   logger.debug("🎮 i'm playing Iceberg");
 
-  const origin = await browser.newPage();
-  const page = await preparePage(origin);
+  const page = await browser.newPage();
+  await page.waitForNetworkIdle();
+
   await page.goto(appUrl, { waitUntil: 'networkidle0' });
   try {
     await delay(1800);

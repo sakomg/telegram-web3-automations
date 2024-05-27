@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import { getRandomDelayBetween } from './utils/delay.js';
+import { generateExecutionTime } from './utils/datetime.js';
 import fs from 'fs/promises';
 import logger from './logger/logger.js';
 import puppeteer from 'puppeteer';
@@ -11,15 +11,9 @@ import playIcebergGame from './games/iceberg.js';
 
 config();
 
-const HOUR_IN_MS = 60 * 60 * 1000;
-const minDelay = 8 * HOUR_IN_MS;
-const maxDelay = 9 * HOUR_IN_MS;
-const randomDelay = getRandomDelayBetween(minDelay, maxDelay);
-const nextExecutionTime = new Date(Date.now() + randomDelay);
-
 execute();
-schedule.scheduleJob(nextExecutionTime, execute);
-logger.info(`scheduled on ${nextExecutionTime.toString()}`);
+// schedule.scheduleJob(generateExecutionTime(), execute);
+logger.info(`scheduled on ${generateExecutionTime('localString')}`);
 
 async function execute() {
   logger.info('start <execute> func', 'main');

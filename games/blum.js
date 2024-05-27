@@ -1,12 +1,12 @@
-import { hasElement, preparePage } from '../utils/puppeteerHelper.js';
+import { hasElement } from '../utils/puppeteerHelper.js';
 import { delay, randomDelay } from '../utils/delay.js';
 import logger from '../logger/logger.js';
 
 const playBlumGame = async (browser, appUrl) => {
   logger.debug("🎮 I'm playing Blum");
 
-  const origin = await browser.newPage();
-  const page = await preparePage(origin);
+  const page = await browser.newPage();
+  await page.waitForNetworkIdle();
 
   try {
     await page.goto(appUrl, { waitUntil: 'networkidle0' });
@@ -21,6 +21,7 @@ const playBlumGame = async (browser, appUrl) => {
     } catch (error) {
       logger.error(`An error occurred during blum gaming: ${error}`, 'blum');
     } finally {
+      await clearLocalStorage(page);
       clearInterval(intervalId);
       await page.close();
     }
@@ -60,7 +61,6 @@ const claimAcrossFarm = async (page) => {
     logger.error(`Error in claimAcrossFarm: ${error}`, 'blum');
   }
 };
-
 const checkIssueAndResetIfNeeded = async (page) => {
   try {
     const hasError = await hasElement(page, '.error.page > .title');
@@ -71,7 +71,7 @@ const checkIssueAndResetIfNeeded = async (page) => {
     const resetButtonSelector = '.error.page > .reset';
     const resetButton = await page.waitForSelector(resetButtonSelector);
     if (resetButton) {
-      await Promise.all([page.waitForNavigation(), resetButton.click()]);
+      await Promise.all([resetButton.click(), page.waitForNavigation({ waitUntil: 'networkidle0' })]);
       await delay(1111);
       logger.info('Page reset after error', 'blum');
     } else {
@@ -79,6 +79,17 @@ const checkIssueAndResetIfNeeded = async (page) => {
     }
   } catch (error) {
     logger.error(`Error in checkIssueAndResetIfNeeded: ${error}`, 'blum');
+  }
+};
+
+const clearLocalStorage = async (page) => {
+  try {
+    await page.evaluate(() => {
+      localStorage.clear();
+    });
+    logger.info('Local storage cleared', 'blum');
+  } catch (error) {
+    logger.error(`Error clearing local storage: ${error}`, 'blum');
   }
 };
 
