@@ -40,7 +40,7 @@ const claimRewards = async (page) => {
     await clickButton(page, claimButtonXpath);
     await randomDelay(2100, 2500);
 
-    if (await waitForButton(page, startFarmingButtonXpath)) {
+    if (await waitForButton(page, startFarmingButtonXpath, 10000)) {
       logger.info("'Start farming' button appeared after claiming. Clicking it...", 'blum');
       await clickButton(page, startFarmingButtonXpath);
     } else {
