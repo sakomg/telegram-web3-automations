@@ -25,31 +25,31 @@ async function checkAndClickButton(page) {
   const getAfterButtonXpath = "//button[contains(., 'Get after') and @disabled]";
 
   if (await waitForButton(page, collectButtonXpath)) {
-    logger.info('collect button found.', 'iceberg');
+    logger.info('Collect button found.', 'iceberg');
     await clickButton(page, collectButtonXpath);
     await randomDelay(1234, 1456);
 
     if (await waitForButton(page, startFarmingButtonXpath)) {
-      logger.info("'start farming' button appeared after collecting. Clicking it...", 'iceberg');
+      logger.info("'Start farming' button appeared after collecting. Clicking it...", 'iceberg');
       await clickButton(page, startFarmingButtonXpath);
     } else {
-      logger.warning("'start farming' button did not appear after collecting.", 'iceberg');
+      logger.warning("'Start farming' button did not appear after collecting.", 'iceberg');
     }
     return;
   }
 
   if (await waitForButton(page, startFarmingButtonXpath)) {
-    logger.info('start farming button found.', 'iceberg');
+    logger.info('Start farming button found.', 'iceberg');
     await clickButton(page, startFarmingButtonXpath);
     return;
   }
 
   if (await waitForButton(page, getAfterButtonXpath)) {
-    logger.info('get after button found but it is disabled.', 'iceberg');
+    logger.info("'Get after...' button found but it is disabled.", 'iceberg');
     return;
   }
 
-  logger.warning('no actionable button found.', 'iceberg');
+  logger.warning('No actionable button found.', 'iceberg');
 }
 
 async function clickButton(page, xpath) {
@@ -59,11 +59,11 @@ async function clickButton(page, xpath) {
       await element.click();
     }
   } catch (error) {
-    logger.error(`timeout waiting for button with XPath: ${xpath}`, 'iceberg');
+    logger.error(`Timeout waiting for button with XPath: ${xpath}`, 'iceberg');
   }
 }
 
-async function waitForButton(page, xpath, timeout = getRandomDelayBetween(1000, 2000)) {
+async function waitForButton(page, xpath, timeout = getRandomDelayBetween(2500, 3500)) {
   try {
     await page.waitForSelector('xpath/' + xpath, { visible: true, timeout });
     return true;

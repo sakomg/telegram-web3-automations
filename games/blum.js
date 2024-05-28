@@ -1,5 +1,5 @@
-import { hasElement } from '../utils/puppeteerHelper.js';
 import { delay, randomDelay } from '../utils/delay.js';
+import { hasElement } from '../utils/puppeteerHelper.js';
 import logger from '../logger/logger.js';
 
 const playBlumGame = async (browser, appUrl) => {
@@ -17,12 +17,12 @@ const playBlumGame = async (browser, appUrl) => {
     }, 5000);
 
     try {
-      await claimAcrossFarm(page);
+      await claimRewards(page);
     } catch (error) {
-      logger.error(`An error occurred during blum gaming: ${error}`, 'blum');
+      logger.error(`An error occurred during gameplay: ${error}`, 'blum');
     } finally {
-      await clearLocalStorage(page);
       clearInterval(intervalId);
+      await clearLocalStorage(page);
       await page.close();
     }
   } catch (error) {
@@ -30,55 +30,69 @@ const playBlumGame = async (browser, appUrl) => {
   }
 };
 
-const claimAcrossFarm = async (page) => {
-  logger.info('> claimAcrossFarm', 'blum');
+const claimRewards = async (page) => {
+  const claimButtonXpath = "//button[contains(., 'Claim')]";
+  const startFarmingButtonXpath = "//button[contains(., 'Start farming')]";
+  const farmingButtonXpath = "//button[contains(., 'Farming')]";
 
-  const farmButtonLabelSelector = 'div.farming-buttons-wrapper > div > button > div.label > div > div:nth-child(1)';
-  const farmButtonSelector = 'div.farming-buttons-wrapper > div > button';
+  if (await waitForButton(page, claimButtonXpath)) {
+    logger.info('Claim button found.', 'blum');
+    await clickButton(page, claimButtonXpath);
+    await randomDelay(2100, 2500);
 
-  try {
-    await page.waitForSelector(farmButtonLabelSelector);
-    const farmButtonLabel = await page.$eval(farmButtonLabelSelector, (el) => el.innerText);
-    logger.info('farmButtonLabel > ' + farmButtonLabel, 'blum');
-
-    const farmButton = await page.waitForSelector(farmButtonSelector);
-
-    if (farmButtonLabel.includes('Claim')) {
-      await Promise.all([farmButton.click(), page.waitForNavigation()]);
-      logger.info('clicked to claim', 'blum');
-      await randomDelay(2100, 2500);
-      await Promise.all([farmButton.click(), page.waitForNavigation()]);
-      logger.info('clicked to start farming...', 'blum');
-    } else if (farmButtonLabel.includes('Start farming')) {
-      await Promise.all([farmButton.click(), page.waitForNavigation()]);
-      logger.info('clicked to start farming...', 'blum');
-    } else if (farmButtonLabel.includes('Farming')) {
-      logger.info('has already been claimed...', 'blum');
+    if (await waitForButton(page, startFarmingButtonXpath)) {
+      logger.info("'Start farming' button appeared after claiming. Clicking it...", 'blum');
+      await clickButton(page, startFarmingButtonXpath);
     } else {
-      logger.warning('Unknown farm button label state', 'blum');
+      logger.warning("'Start farming' button did not appear after claiming.", 'blum');
     }
-  } catch (error) {
-    logger.error(`Error in claimAcrossFarm: ${error}`, 'blum');
+  } else if (await waitForButton(page, startFarmingButtonXpath)) {
+    logger.info('Start farming button found. Clicking it...', 'blum');
+    await clickButton(page, startFarmingButtonXpath);
+  } else if (await waitForButton(page, farmingButtonXpath)) {
+    logger.info('Already farming.', 'blum');
+  } else {
+    logger.warning('No actionable button found.', 'blum');
   }
 };
+
 const checkIssueAndResetIfNeeded = async (page) => {
   try {
     const hasError = await hasElement(page, '.error.page > .title');
-    if (!hasError) {
-      return;
-    }
-
-    const resetButtonSelector = '.error.page > .reset';
-    const resetButton = await page.waitForSelector(resetButtonSelector);
-    if (resetButton) {
-      await Promise.all([resetButton.click(), page.waitForNavigation({ waitUntil: 'networkidle0' })]);
-      await delay(1111);
-      logger.info('Page reset after error', 'blum');
-    } else {
-      logger.warning('Reset button not found on error page', 'blum');
+    if (hasError) {
+      const resetButtonSelector = '.error.page > .reset';
+      const resetButton = await page.waitForSelector(resetButtonSelector);
+      if (resetButton) {
+        await Promise.all([resetButton.click(), page.waitForNavigation({ waitUntil: 'networkidle0' })]);
+        logger.info('Page reset after error', 'blum');
+      } else {
+        logger.warning('Reset button not found on error page', 'blum');
+      }
     }
   } catch (error) {
     logger.error(`Error in checkIssueAndResetIfNeeded: ${error}`, 'blum');
+  }
+};
+
+const clickButton = async (page, xpath) => {
+  try {
+    const element = await page.waitForSelector('xpath/' + xpath, { visible: true, timeout: 60000 });
+    if (element) {
+      await element.click();
+      return true;
+    }
+  } catch (error) {
+    logger.error(`Timeout waiting for button with XPath: ${xpath}`, 'blum');
+  }
+  return false;
+};
+
+const waitForButton = async (page, xpath, timeout = 5000) => {
+  try {
+    await page.waitForSelector('xpath/' + xpath, { visible: true, timeout });
+    return true;
+  } catch (e) {
+    return false;
   }
 };
 
@@ -87,7 +101,7 @@ const clearLocalStorage = async (page) => {
     await page.evaluate(() => {
       localStorage.clear();
     });
-    logger.info('Local storage cleared', 'blum');
+    logger.info('Local storage cleared.', 'blum');
   } catch (error) {
     logger.error(`Error clearing local storage: ${error}`, 'blum');
   }
