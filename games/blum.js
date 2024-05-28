@@ -74,28 +74,6 @@ const checkIssueAndResetIfNeeded = async (page) => {
   }
 };
 
-const clickButton = async (page, xpath) => {
-  try {
-    const element = await page.waitForSelector('xpath/' + xpath, { visible: true, timeout: 60000 });
-    if (element) {
-      await element.click();
-      return true;
-    }
-  } catch (error) {
-    logger.error(`Timeout waiting for button with XPath: ${xpath}`, 'blum');
-  }
-  return false;
-};
-
-const waitForButton = async (page, xpath, timeout = 5000) => {
-  try {
-    await page.waitForSelector('xpath/' + xpath, { visible: true, timeout });
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
-
 const clearLocalStorage = async (page) => {
   try {
     await page.evaluate(() => {

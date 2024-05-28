@@ -10,7 +10,6 @@ import playBlumGame from './games/blum.js';
 import playIcebergGame from './games/iceberg.js';
 
 config();
-
 execute();
 schedule.scheduleJob(generateExecutionTime(), execute);
 logger.info(`scheduled, first call in ${generateExecutionTime('localString')}`);

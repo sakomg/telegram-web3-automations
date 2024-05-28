@@ -1,4 +1,4 @@
-import { delay, getRandomDelayBetween, randomDelay } from '../utils/delay.js';
+import { delay, randomDelay } from '../utils/delay.js';
 import logger from '../logger/logger.js';
 
 const playIcebergGame = async (browser, appUrl) => {
@@ -50,26 +50,6 @@ async function checkAndClickButton(page) {
   }
 
   logger.warning('No actionable button found.', 'iceberg');
-}
-
-async function clickButton(page, xpath) {
-  try {
-    const element = await page.waitForSelector('xpath/' + xpath, { visible: true, timeout: 6000 });
-    if (element) {
-      await element.click();
-    }
-  } catch (error) {
-    logger.error(`Timeout waiting for button with XPath: ${xpath}`, 'iceberg');
-  }
-}
-
-async function waitForButton(page, xpath, timeout = getRandomDelayBetween(2500, 3500)) {
-  try {
-    await page.waitForSelector('xpath/' + xpath, { visible: true, timeout });
-    return true;
-  } catch (e) {
-    return false;
-  }
 }
 
 export default playIcebergGame;
