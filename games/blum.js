@@ -63,7 +63,8 @@ const checkIssueAndResetIfNeeded = async (page) => {
       const resetButtonSelector = '.error.page > .reset';
       const resetButton = await page.waitForSelector(resetButtonSelector);
       if (resetButton) {
-        await Promise.all([resetButton.click(), page.waitForNavigation({ waitUntil: 'networkidle0' })]);
+        await resetButton.click();
+        await randomDelay(3100, 3500);
         logger.info('Page reset after error', 'blum');
       } else {
         logger.warning('Reset button not found on error page', 'blum');
