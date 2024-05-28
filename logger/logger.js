@@ -9,22 +9,22 @@ class LoggerWithReports extends Logger {
 
   debug = (message, tag) => {
     super.debug(message, tag);
-    this.#logMessages.push(`<b>[DEBUG]</b> ${message}`);
+    this.#logMessages.push(`🐛 <b>[DEBUG]</b> ${message}`);
   };
 
   info = (message, tag) => {
     super.info(message, tag);
-    this.#logMessages.push(`<b>[INFO]</b> ${message}`);
+    this.#logMessages.push(`🔎 <b>[INFO]</b> ${message}`);
   };
 
   warning = (message, tag) => {
     super.warning(message, tag);
-    this.#logMessages.push(`<b>[WARN]</b> ${message}`);
+    this.#logMessages.push(`⚠️ <b>[WARN]</b> ${message}`);
   };
 
   error = (message, tag) => {
     super.error(message, tag);
-    this.#logMessages.push(`<b>[ERROR]</b> ${message}`);
+    this.#logMessages.push(`❌ <b>[ERROR]</b> ${message}`);
   };
 
   logsAsReport = () => {
