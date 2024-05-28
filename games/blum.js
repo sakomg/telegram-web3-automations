@@ -1,5 +1,5 @@
 import { delay, randomDelay } from '../utils/delay.js';
-import { hasElement } from '../utils/puppeteerHelper.js';
+import { clickButton, hasElement, waitForButton } from '../utils/puppeteerHelper.js';
 import logger from '../logger/logger.js';
 
 const playBlumGame = async (browser, appUrl) => {

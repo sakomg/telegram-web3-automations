@@ -1,4 +1,5 @@
 import { delay, randomDelay } from '../utils/delay.js';
+import { clickButton, waitForButton } from '../utils/puppeteerHelper.js';
 import logger from '../logger/logger.js';
 
 const playIcebergGame = async (browser, appUrl) => {

@@ -1,4 +1,3 @@
-import { config } from 'dotenv';
 import { generateExecutionTime } from './utils/datetime.js';
 import fs from 'fs/promises';
 import logger from './logger/logger.js';
@@ -8,14 +7,14 @@ import adsMobileProfile from './ads/profiles.js';
 import adsOpenBrowser from './ads/openBrowser.js';
 import playBlumGame from './games/blum.js';
 import playIcebergGame from './games/iceberg.js';
+import { sendMessageToUser } from './bot/telegram.js';
 
-config();
 execute();
 schedule.scheduleJob(generateExecutionTime(), execute);
 logger.info(`scheduled, first call in ${generateExecutionTime('localString')}`);
 
 async function execute() {
-  logger.info('start <execute> func', 'main');
+  logger.info('start [execute] func', 'main');
   const userId = await adsMobileProfile();
   const result = await adsOpenBrowser(userId);
   const browserPromise = puppeteer.connect({
@@ -29,15 +28,16 @@ async function execute() {
   } catch (e) {
     logger.error(e, 'main');
   } finally {
-    logger.info('finish <execute> func', 'main');
-    await browser.close();
+    logger.info('finish [execute] func', 'main');
+    browser.close();
+    sendMessageToUser(logger.logsAsReport());
   }
 }
 
 async function startPlayingGames(browser, tgApps) {
   for (const tgApp of tgApps) {
     if (tgApp.active) {
-      logger.info(`in progress [${tgApp.username}] user...`);
+      logger.info(`[${tgApp.username}] - in progress`);
       for (const [appName, appUrl] of Object.entries(tgApp.games)) {
         if (appUrl) {
           await defineAndRunApplication(browser, appName, appUrl);
@@ -46,7 +46,7 @@ async function startPlayingGames(browser, tgApps) {
         }
       }
     } else {
-      logger.info(`skip inactive [${tgApp.username}] user...`);
+      logger.info(`[${tgApp.username}] - inactive`);
     }
   }
 }

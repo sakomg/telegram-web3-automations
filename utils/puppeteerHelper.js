@@ -1,4 +1,5 @@
 import logger from '../logger/logger.js';
+import { randomDelay } from './delay.js';
 
 export const hasElement = async (page, selector) => {
   const elements = await page.$$(selector);
@@ -9,7 +10,9 @@ export const clickButton = async (page, xpath, logTag) => {
   try {
     const element = await page.waitForSelector('xpath/' + xpath, { visible: true, timeout: 60000 });
     if (element) {
-      await element.click();
+      element.click();
+      logger.info(`Button clicked with XPath: ${xpath}`);
+      await randomDelay(1500, 2500);
       return true;
     }
   } catch (error) {
