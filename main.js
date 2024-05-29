@@ -41,7 +41,7 @@ async function startPlayingGames(userId, tgApps) {
   for (const tgApp of shuffledTgApps) {
     if (tgApp.active) {
       logger.info(`(${iterationCounter}) [${tgApp.username}] - in progress`);
-      const updateResult = await updateProfileProxy('jic44wo', tgApp.proxy);
+      const updateResult = await updateProfileProxy(userId, tgApp.proxy);
       if (updateResult.success) {
         logger.info(`Successfully updated proxy: ${JSON.stringify(updateResult.message)}`);
         const openResult = await adsOpenBrowser(userId);
