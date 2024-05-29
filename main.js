@@ -14,6 +14,7 @@ import { randomDelay } from './utils/delay.js';
 execute();
 schedule.scheduleJob(generateExecutionTime(), execute);
 logger.info(`Scheduled, first call in ${generateExecutionTime('localString')}`);
+
 async function execute() {
   logger.info('Start [execute] func', 'main');
   const result = await getGeneralProfile();

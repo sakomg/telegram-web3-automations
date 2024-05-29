@@ -1,10 +1,10 @@
-import { getRandomDelayBetween } from './delay.js';
+import { getRandomNumberBetween } from './delay.js';
 
 export function generateExecutionTime(format = 'datetime') {
   const HOUR_IN_MS = 60 * 60 * 1000;
   const minDelay = 8 * HOUR_IN_MS;
   const maxDelay = 9 * HOUR_IN_MS;
-  const randomDelay = getRandomDelayBetween(minDelay, maxDelay);
+  const randomDelay = getRandomNumberBetween(minDelay, maxDelay);
   const nextExecutionTime = new Date(Date.now() + randomDelay);
 
   const formatToValue = {

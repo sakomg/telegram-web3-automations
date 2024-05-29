@@ -16,8 +16,8 @@ async function randomDelay(minDelay, maxDelay, timeFormat = 'ms') {
   await delay(nmb);
 }
 
-function getRandomDelayBetween(minDelay, maxDelay) {
+function getRandomNumberBetween(minDelay, maxDelay) {
   return Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
 }
 
-export { delay, randomDelay, getRandomDelayBetween };
+export { delay, randomDelay, getRandomNumberBetween };
