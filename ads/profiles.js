@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const getGeneralProfile = async () => {
-  let result = [];
+  const result = { success: true, message: null };
   const options = {
     method: 'GET',
     url: 'http://local.adspower.net:50325/api/v1/user/list?page=1&page_size=10',
@@ -9,16 +9,20 @@ export const getGeneralProfile = async () => {
 
   try {
     const { data } = await axios(options);
-    result = data?.data?.list.map((el) => (el.name.includes('General') ? el.user_id : null)).filter((el) => el !== null);
+    const profiles = data?.data?.list.map((el) => (el.name.includes('General') ? el.user_id : null)).filter((el) => el !== null);
+    if (profiles.length) {
+      result.success = true;
+      result.message = profiles[0];
+    } else {
+      result.success = false;
+      result.message = 'Firstly create "General" profile in ADS';
+    }
   } catch (e) {
-    console.log('ads: error in fetching profiles', e);
+    result.success = false;
+    result.message = 'Error in fetching profiles ' + e;
   }
 
-  if (!result.length) {
-    throw new Error('firstly create General profile in ADS');
-  }
-
-  return result[0];
+  return result;
 };
 
 export const updateProfileProxy = async (userId, options) => {

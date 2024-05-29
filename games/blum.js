@@ -5,23 +5,23 @@ import logger from '../logger/logger.js';
 const playBlumGame = async (browser, appUrl) => {
   logger.debug('🎮 Blum');
 
+  let intervalId = null;
   const page = await browser.newPage();
   await page.waitForNetworkIdle();
 
   try {
-    await page.goto(appUrl, { waitUntil: 'networkidle0' });
-    await delay(1200);
-
-    const intervalId = setInterval(async () => {
-      await checkIssueAndResetIfNeeded(page);
-    }, 5000);
+    await Promise.all([page.goto(appUrl), page.waitForNavigation()]);
+    await delay(2000);
 
     try {
+      intervalId = setInterval(async () => {
+        await checkIssueAndResetIfNeeded(page);
+      }, 5000);
       await claimRewards(page);
     } catch (error) {
       logger.error(`An error occurred during gameplay: ${error}`, 'blum');
     } finally {
-      clearInterval(intervalId);
+      if (intervalId != null) clearInterval(intervalId);
       await clearLocalStorage(page);
       await page.close();
     }
@@ -38,8 +38,12 @@ const claimRewards = async (page) => {
   if (await waitForButton(page, claimButtonXpath)) {
     logger.info('Claim button found.', 'blum');
     await clickButton(page, claimButtonXpath);
-    await randomDelay(2100, 2500);
+    await randomDelay(1800, 2500);
 
+    const hasStartFarmingButton = await hasElement(page, 'div.farming-buttons-wrapper > div > button > div.label');
+    if (!hasStartFarmingButton) {
+      await page.reload({ waitUntil: ['networkidle0', 'domcontentloaded'] });
+    }
     if (await waitForButton(page, startFarmingButtonXpath, 10000)) {
       logger.info("'Start farming' button appeared after claiming. Clicking it...", 'blum');
       await clickButton(page, startFarmingButtonXpath);

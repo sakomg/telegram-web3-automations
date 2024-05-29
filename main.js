@@ -7,29 +7,38 @@ import playBlumGame from './games/blum.js';
 import playIcebergGame from './games/iceberg.js';
 import { generateExecutionTime } from './utils/datetime.js';
 import { getGeneralProfile, updateProfileProxy } from './ads/profiles.js';
-import { sendMessageToUser } from './bot/telegram.js';
+import { sendMessageToUser, startPolling, stopPolling } from './bot/telegram.js';
+import { shuffleArray } from './utils/shuffle.js';
+import { randomDelay } from './utils/delay.js';
 
 execute();
 schedule.scheduleJob(generateExecutionTime(), execute);
-logger.info(`scheduled, first call in ${generateExecutionTime('localString')}`);
-
+logger.info(`Scheduled, first call in ${generateExecutionTime('localString')}`);
 async function execute() {
-  logger.info('start [execute] func', 'main');
-  const userId = await getGeneralProfile();
+  logger.info('Start [execute] func', 'main');
+  const result = await getGeneralProfile();
+  if (!result.success) {
+    logger.error(result.message);
+    return;
+  }
   const tgApps = await fs.readFile('./data/apps.json', 'utf8');
   try {
-    await startPlayingGames(userId, JSON.parse(tgApps));
+    await startPlayingGames(result.message, JSON.parse(tgApps));
   } catch (e) {
     logger.error(e, 'main');
   } finally {
-    logger.info('finish [execute] func', 'main');
-    sendMessageToUser(logger.logsAsReport());
+    logger.info('Finish [execute] func', 'main');
+    await startPolling();
+    await sendMessageToUser(logger.logsAsReport());
+    await stopPolling();
   }
 }
 
 async function startPlayingGames(userId, tgApps) {
   let iterationCounter = 1;
-  for (const tgApp of tgApps) {
+  const shuffledTgApps = shuffleArray(tgApps);
+  logger.info(`Shuffled users, now looks like: ${shuffledTgApps.map((app) => app.username).join(' > ')}`);
+  for (const tgApp of shuffledTgApps) {
     if (tgApp.active) {
       logger.info(`(${iterationCounter}) [${tgApp.username}] - in progress`);
       const updateResult = await updateProfileProxy('jic44wo', tgApp.proxy);
@@ -46,6 +55,7 @@ async function startPlayingGames(userId, tgApps) {
             logger.warning(`There is no link to the [${appName}] app`);
           }
         }
+        await randomDelay(4, 8, 's');
         await browser.close();
       } else {
         logger.error(updateResult.message);
