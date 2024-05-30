@@ -11,7 +11,7 @@ const playBlumGame = async (browser, appUrl) => {
 
   try {
     await Promise.all([page.goto(appUrl), page.waitForNavigation()]);
-    await delay(2000);
+    await delay(5000);
 
     try {
       intervalId = setInterval(async () => {
@@ -38,7 +38,7 @@ const claimRewards = async (page) => {
   if (await waitForButton(page, claimButtonXpath)) {
     logger.info('Claim button found.', 'blum');
     await clickButton(page, claimButtonXpath);
-    await randomDelay(1800, 2500);
+    await randomDelay(2000, 2500);
 
     const hasStartFarmingButton = await hasElement(page, 'div.farming-buttons-wrapper > div > button > div.label');
     if (!hasStartFarmingButton) {
