@@ -38,10 +38,10 @@ async function execute() {
 async function startPlayingGames(userId, tgApps) {
   let iterationCounter = 1;
   const shuffledTgApps = shuffleArray(tgApps);
-  logger.info(`Shuffled users, now looks like: ${shuffledTgApps.map((app) => app.username).join(' > ')}`);
+  logger.info(`Users queue: ${shuffledTgApps.map((app) => app.username).join(' > ')}`);
   for (const tgApp of shuffledTgApps) {
     if (tgApp.active) {
-      logger.info(`(${iterationCounter}) [${tgApp.username}] - in progress`);
+      logger.debug(`#${iterationCounter} ${tgApp.username} - in progress...`);
       const updateResult = await updateProfileProxy(userId, tgApp.proxy);
       if (updateResult.success) {
         logger.info(`Successfully updated proxy: ${JSON.stringify(updateResult.message)}`);
@@ -62,7 +62,7 @@ async function startPlayingGames(userId, tgApps) {
         logger.error(updateResult.message);
       }
     } else {
-      logger.info(`(${iterationCounter}) [${tgApp.username}] - inactive`);
+      logger.debug(`#${iterationCounter} ${tgApp.username} - inactive`);
     }
     iterationCounter++;
   }
