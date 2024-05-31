@@ -12,11 +12,6 @@ class LoggerWithReports extends Logger {
     this.#logMessages.push(`🐛 <b>[DEBUG]</b> ${message}`);
   };
 
-  info = (message, tag) => {
-    super.info(message, tag);
-    this.#logMessages.push(`🔎 <b>[INFO]</b> ${message}`);
-  };
-
   warning = (message, tag) => {
     super.warning(message, tag);
     this.#logMessages.push(`⚠️ <b>[WARN]</b> ${message}`);

@@ -17,6 +17,14 @@ const playBlumGame = async (browser, appUrl) => {
       intervalId = setInterval(async () => {
         await checkIssueAndResetIfNeeded(page);
       }, 5000);
+
+      const continueButtonXpath = "//button[contains(., 'Continue')]";
+      if (await waitForButton(page, continueButtonXpath)) {
+        logger.info('Daily rewards step', 'blum');
+        await clickButton(page, continueButtonXpath);
+        await randomDelay(2, 4, 's');
+      }
+
       await claimRewards(page);
     } catch (error) {
       logger.error(`An error occurred during gameplay: ${error}`, 'blum');
