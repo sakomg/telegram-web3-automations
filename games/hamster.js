@@ -108,7 +108,7 @@ async function processMineItems(page, initialBalance) {
 
     logger.info('Cards which will click: ' + cardsToClick.length);
 
-    for (const card of cardsToClick) {
+    for (const card of shuffleArray(cardsToClick)) {
       try {
         if (card.element) {
           await randomDelay(1500, 2000);
@@ -149,6 +149,7 @@ async function navigateToTab(page, tabName) {
 async function startRandomClick(page, energyThreshold, minInterval, maxInterval) {
   let elapsedTime = 0;
   let maxDuration = getRandomNumberBetween(2 * 60 * 1000, 3 * 60 * 1000);
+  logger.info('Clicker duration: ' + maxDuration / 60000);
 
   const runLoop = async () => {
     await new Promise((resolve) => {

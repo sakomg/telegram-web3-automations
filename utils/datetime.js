@@ -1,5 +1,11 @@
 import { getRandomNumberBetween } from './delay.js';
 
+export function generateRandomCron(fromMinutes, toMinutes) {
+  const randomMinutes = Math.floor(Math.random() * (toMinutes - fromMinutes + 1)) + fromMinutes;
+
+  return `*/${randomMinutes} * * * *`;
+}
+
 export function generateExecutionTime(format = 'datetime') {
   const HOUR_IN_MS = 60 * 60 * 1000;
   const minDelay = 8 * HOUR_IN_MS;

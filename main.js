@@ -6,17 +6,23 @@ import adsOpenBrowser from './ads/openBrowser.js';
 import playBlumGame from './games/blum.js';
 import playIcebergGame from './games/iceberg.js';
 import playHamsterGame from './games/hamster.js';
-import { generateExecutionTime } from './utils/datetime.js';
 import { getGeneralProfile, updateProfileProxy } from './ads/profiles.js';
 import { sendMessageToUser, startPolling, stopPolling } from './bot/telegram.js';
 import { shuffleArray } from './utils/shuffle.js';
-import { randomDelay } from './utils/delay.js';
+import { getRandomNumberBetween, randomDelay } from './utils/delay.js';
 
-execute();
-schedule.scheduleJob(generateExecutionTime(), execute);
-logger.info(`Scheduled, first call in ${generateExecutionTime('localString')}`);
+(function scheduleTask() {
+  const taskTime = new Date(Date.now() + getRandomNumberBetween(181, 228) * 60 * 1000);
+  logger.debug(`Task time: ${taskTime.getHours()}:${taskTime.getMinutes()}`);
+  executeTask();
+  const job = schedule.scheduleJob(taskTime, async () => {
+    await executeTask();
+    job.cancel();
+    scheduleTask();
+  });
+})();
 
-async function execute() {
+async function executeTask() {
   logger.info('Start [execute] func', 'main');
   const result = await getGeneralProfile();
   if (!result.success) {
@@ -72,10 +78,10 @@ async function startPlayingGames(userId, tgApps) {
 async function defineAndRunApplication(browser, appName, appUrl) {
   switch (appName) {
     case 'blum':
-      // await playBlumGame(browser, appUrl);
+      await playBlumGame(browser, appUrl);
       break;
     case 'iceberg':
-      // await playIcebergGame(browser, appUrl);
+      await playIcebergGame(browser, appUrl);
       break;
     case 'hamster':
       await playHamsterGame(browser, appUrl);
