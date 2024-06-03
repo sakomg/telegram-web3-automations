@@ -1,5 +1,5 @@
 import { delay, randomDelay } from '../utils/delay.js';
-import { clickButton, hasElement, waitForButton } from '../utils/puppeteerHelper.js';
+import { clearLocalStorage, clickButton, hasElement, waitForButton } from '../utils/puppeteerHelper.js';
 import logger from '../logger/logger.js';
 
 const playBlumGame = async (browser, appUrl) => {
@@ -84,17 +84,6 @@ const checkIssueAndResetIfNeeded = async (page) => {
     }
   } catch (error) {
     logger.error(`Error in checkIssueAndResetIfNeeded: ${error}`, 'blum');
-  }
-};
-
-const clearLocalStorage = async (page) => {
-  try {
-    await page.evaluate(() => {
-      localStorage.clear();
-    });
-    logger.info('Local storage cleared.', 'blum');
-  } catch (error) {
-    logger.error(`Error clearing local storage: ${error}`, 'blum');
   }
 };
 

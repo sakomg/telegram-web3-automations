@@ -5,6 +5,7 @@ import schedule from 'node-schedule';
 import adsOpenBrowser from './ads/openBrowser.js';
 import playBlumGame from './games/blum.js';
 import playIcebergGame from './games/iceberg.js';
+import playHamsterGame from './games/hamster.js';
 import { generateExecutionTime } from './utils/datetime.js';
 import { getGeneralProfile, updateProfileProxy } from './ads/profiles.js';
 import { sendMessageToUser, startPolling, stopPolling } from './bot/telegram.js';
@@ -71,10 +72,13 @@ async function startPlayingGames(userId, tgApps) {
 async function defineAndRunApplication(browser, appName, appUrl) {
   switch (appName) {
     case 'blum':
-      await playBlumGame(browser, appUrl);
+      // await playBlumGame(browser, appUrl);
       break;
     case 'iceberg':
-      await playIcebergGame(browser, appUrl);
+      // await playIcebergGame(browser, appUrl);
+      break;
+    case 'hamster':
+      await playHamsterGame(browser, appUrl);
       break;
     default:
       logger.warning(`[${appName}] don't supported yet`);
