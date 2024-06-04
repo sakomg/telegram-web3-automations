@@ -6,13 +6,17 @@ import adsOpenBrowser from './ads/openBrowser.js';
 import playBlumGame from './games/blum.js';
 import playIcebergGame from './games/iceberg.js';
 import playHamsterGame from './games/hamster.js';
+import TgClient from './bot/telegram.js';
+import { config } from 'dotenv';
 import { getGeneralProfile, updateProfileProxy } from './ads/profiles.js';
-import { sendMessageToUser, startPolling, stopPolling } from './bot/telegram.js';
 import { shuffleArray } from './utils/shuffle.js';
 import { getRandomNumberBetween, randomDelay } from './utils/delay.js';
 
 (function play() {
-  executeTask();
+  config();
+  if (process.env.INIT_RUN == 'true') {
+    executeTask();
+  }
   scheduleTask();
 })();
 
@@ -40,9 +44,11 @@ async function executeTask() {
     logger.error(e, 'main');
   } finally {
     logger.info('Finish [execute] func', 'main');
-    await startPolling();
-    await sendMessageToUser(logger.logsAsReport());
-    await stopPolling();
+    const { TG_TOKEN, TG_RECEIVER_ID } = process.env;
+    const t = new TgClient(TG_TOKEN);
+    await t.startPolling();
+    await t.sendMessageToUser(logger.logsAsReport(), TG_RECEIVER_ID);
+    await t.stopPolling();
   }
 }
 
