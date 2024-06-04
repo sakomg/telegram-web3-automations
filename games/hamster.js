@@ -55,7 +55,8 @@ async function checkAndReload(page) {
 
   if (hasLoading) {
     await delay(3000);
-    await page.reload({ waitUntil: ['networkidle0', 'domcontentloaded'] });
+    await page.reload();
+    await delay(2000);
     return true;
   }
 
