@@ -13,12 +13,7 @@ const playHamsterGame = async (browser, appUrl) => {
     await Promise.all([page.goto(appUrl), page.waitForNavigation()]);
     await delay(7000);
 
-    const hasLoading = await hasElement(page, 'div.main > div.loading-launch');
-
-    if (hasLoading) {
-      await delay(3000);
-      await page.reload({ waitUntil: ['networkidle0', 'domcontentloaded'] });
-    }
+    await repeatCheckAndReload(page, 3);
 
     const thanksButtonXpath = "//button[contains(., 'Thank you')]";
     const balanceSelector = 'div.user-balance-large > div > p';
@@ -54,6 +49,34 @@ const playHamsterGame = async (browser, appUrl) => {
     await page.close();
   }
 };
+
+async function checkAndReload(page) {
+  const hasLoading = await hasElement(page, 'div.main > div.loading-launch');
+
+  if (hasLoading) {
+    await delay(3000);
+    await page.reload({ waitUntil: ['networkidle0', 'domcontentloaded'] });
+    return true;
+  }
+
+  return false;
+}
+
+async function repeatCheckAndReload(page, maxAttempts) {
+  let reloadCount = 0;
+
+  while (reloadCount < maxAttempts) {
+    const shouldReload = await checkAndReload(page);
+
+    if (!shouldReload) {
+      return;
+    }
+
+    reloadCount++;
+  }
+
+  throw new Error(`Maximum reload attempts (${maxAttempts}) reached.`);
+}
 
 async function extractValue(page, selector) {
   return await page.$eval(selector, (element) => {
