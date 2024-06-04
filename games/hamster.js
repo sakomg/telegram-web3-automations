@@ -13,7 +13,9 @@ const playHamsterGame = async (browser, appUrl) => {
     await Promise.all([page.goto(appUrl), page.waitForNavigation()]);
     await delay(7000);
 
+    logger.info('start repeatCheckAndReload');
     await repeatCheckAndReload(page, 3);
+    logger.info('stop repeatCheckAndReload');
 
     const thanksButtonXpath = "//button[contains(., 'Thank you')]";
     const balanceSelector = 'div.user-balance-large > div > p';
@@ -53,9 +55,11 @@ const playHamsterGame = async (browser, appUrl) => {
 async function checkAndReload(page) {
   const hasLoading = await hasElement(page, 'div.main > div.loading-launch');
 
+  logger.info('selector, hasLoading ===> ' + hasLoading);
   if (hasLoading) {
     await delay(3000);
     await page.reload();
+    logger.info('after reload');
     await delay(2000);
     return true;
   }
@@ -65,7 +69,7 @@ async function checkAndReload(page) {
 
 async function repeatCheckAndReload(page, maxAttempts) {
   let reloadCount = 0;
-
+  logger.info('attempt counter ' + reloadCount);
   while (reloadCount < maxAttempts) {
     const shouldReload = await checkAndReload(page);
 

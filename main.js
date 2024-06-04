@@ -82,10 +82,10 @@ async function startPlayingGames(userId, tgApps) {
 async function defineAndRunApplication(browser, appName, appUrl) {
   switch (appName) {
     case 'blum':
-      await playBlumGame(browser, appUrl);
+      // await playBlumGame(browser, appUrl);
       break;
     case 'iceberg':
-      await playIcebergGame(browser, appUrl);
+      // await playIcebergGame(browser, appUrl);
       break;
     case 'hamster':
       await playHamsterGame(browser, appUrl);
