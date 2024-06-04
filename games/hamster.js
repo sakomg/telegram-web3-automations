@@ -1,5 +1,5 @@
 import { delay, getRandomNumberBetween, randomDelay } from '../utils/delay.js';
-import { clearLocalStorage, clickButton, clickLinkWithHref, waitForButton } from '../utils/puppeteerHelper.js';
+import { clearLocalStorage, clickButton, clickLinkWithHref, hasElement, waitForButton } from '../utils/puppeteerHelper.js';
 import logger from '../logger/logger.js';
 import { shuffleArray } from '../utils/shuffle.js';
 
@@ -12,6 +12,13 @@ const playHamsterGame = async (browser, appUrl) => {
   try {
     await Promise.all([page.goto(appUrl), page.waitForNavigation()]);
     await delay(7000);
+
+    const hasLoading = await hasElement(page, 'div.main > div.loading-launch');
+
+    if (hasLoading) {
+      await delay(3000);
+      await page.reload({ waitUntil: ['networkidle0', 'domcontentloaded'] });
+    }
 
     const thanksButtonXpath = "//button[contains(., 'Thank you')]";
     const balanceSelector = 'div.user-balance-large > div > p';
