@@ -11,7 +11,12 @@ import { sendMessageToUser, startPolling, stopPolling } from './bot/telegram.js'
 import { shuffleArray } from './utils/shuffle.js';
 import { getRandomNumberBetween, randomDelay } from './utils/delay.js';
 
-(function scheduleTask() {
+(function play() {
+  executeTask();
+  scheduleTask();
+})();
+
+function scheduleTask() {
   const taskTime = new Date(Date.now() + getRandomNumberBetween(181, 228) * 60 * 1000);
   logger.debug(`Fire on ${taskTime.getHours()}:${taskTime.getMinutes()}`);
   const job = schedule.scheduleJob(taskTime, async () => {
@@ -19,7 +24,7 @@ import { getRandomNumberBetween, randomDelay } from './utils/delay.js';
     job.cancel();
     scheduleTask();
   });
-})();
+}
 
 async function executeTask() {
   logger.info('Start [execute] func', 'main');
