@@ -11,11 +11,9 @@ const playHamsterGame = async (browser, appUrl) => {
 
   try {
     await Promise.all([page.goto(appUrl), page.waitForNavigation()]);
-    await delay(7000);
+    await delay(8500);
 
-    logger.info('start repeatCheckAndReload');
     await repeatCheckAndReload(page, 3);
-    logger.info('stop repeatCheckAndReload');
 
     const thanksButtonXpath = "//button[contains(., 'Thank you')]";
     const balanceSelector = 'div.user-balance-large > div > p';
@@ -42,7 +40,7 @@ const playHamsterGame = async (browser, appUrl) => {
       await processMineItems(page, balanceValue);
     }
     let b = await extractValue(page, balanceSelector);
-    logger.debug('Completed processing, balance: ' + b);
+    logger.debug('Enough for now, balance: ' + b);
     await randomDelay(2000, 3500);
   } catch (error) {
     logger.error(`An error occurred during initial setup: ${error}`, 'hamster');
@@ -52,27 +50,16 @@ const playHamsterGame = async (browser, appUrl) => {
   }
 };
 
-async function checkAndReload(page) {
-  const hasLoading = await hasElement(page, 'div.main > div.loading-launch');
-
-  logger.info('selector, hasLoading ===> ' + hasLoading);
-  if (hasLoading) {
-    await delay(3000);
-    await page.reload();
-    logger.info('after reload');
-    await delay(2000);
-    return true;
-  }
-
-  return false;
-}
-
 async function repeatCheckAndReload(page, maxAttempts) {
   let reloadCount = 0;
-  logger.info('attempt counter ' + reloadCount);
+  let reloadTimeouts = [7000, 9000, 15000];
   while (reloadCount < maxAttempts) {
-    const shouldReload = await checkAndReload(page);
+    const timeout = reloadTimeouts[reloadCount];
+    logger.info(`Reload checker: attempt ${reloadCount + 1}, timeout ${timeout}`);
 
+    const shouldReload = await checkAndReload(page, timeout);
+
+    logger.info(`Reload checker: should reload? ${shouldReload ? 'YES' : 'NO'}`);
     if (!shouldReload) {
       return;
     }
@@ -81,6 +68,18 @@ async function repeatCheckAndReload(page, maxAttempts) {
   }
 
   throw new Error(`Maximum reload attempts (${maxAttempts}) reached.`);
+}
+
+async function checkAndReload(page, timeout) {
+  const hasLoading = await hasElement(page, 'div.main > div.loading-launch');
+
+  if (hasLoading) {
+    await page.reload();
+    await delay(timeout);
+    return true;
+  }
+
+  return false;
 }
 
 async function extractValue(page, selector) {
@@ -102,7 +101,7 @@ async function processMineItems(page, initialBalance) {
     const cards = [];
     const cardSelectors = '.upgrade-list > .upgrade-item:not(.is-disabled)';
     const cardElements = await page.$$(cardSelectors);
-    logger.info('active cards: ' + cardElements.length);
+    logger.info('Active cards: ' + cardElements.length);
 
     if (cardElements.length === 0) {
       logger.info('No more clickable cards found.');
@@ -184,7 +183,7 @@ async function navigateToTab(page, tabName) {
 async function startRandomClick(page, energyThreshold, minInterval, maxInterval) {
   let elapsedTime = 0;
   let maxDuration = getRandomNumberBetween(2 * 60 * 1000, 3 * 60 * 1000);
-  logger.info('Clicker duration: ' + maxDuration / 60000);
+  logger.info('Clicker duration: ' + (maxDuration / 60000).toFixed(2));
 
   const runLoop = async () => {
     await new Promise((resolve) => {

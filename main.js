@@ -14,9 +14,7 @@ import { getRandomNumberBetween, randomDelay } from './utils/delay.js';
 
 (function play() {
   config();
-  if (process.env.INIT_RUN == 'true') {
-    executeTask();
-  }
+  if (process.env.INIT_RUN == 'true') executeTask();
   scheduleTask();
 })();
 
@@ -24,14 +22,14 @@ function scheduleTask() {
   const taskTime = new Date(Date.now() + getRandomNumberBetween(181, 228) * 60 * 1000);
   logger.debug(`Fire on ${taskTime.getHours()}:${taskTime.getMinutes()}`);
   const job = schedule.scheduleJob(taskTime, async () => {
-    await executeTask();
+    executeTask();
     job.cancel();
     scheduleTask();
   });
 }
 
 async function executeTask() {
-  logger.info('Start [execute] func', 'main');
+  logger.info('Fired [execute] task', 'main');
   const result = await getGeneralProfile();
   if (!result.success) {
     logger.error(result.message);
@@ -43,7 +41,7 @@ async function executeTask() {
   } catch (e) {
     logger.error(e, 'main');
   } finally {
-    logger.info('Finish [execute] func', 'main');
+    logger.info('Finish [execute] task', 'main');
     const { TG_TOKEN, TG_RECEIVER_ID } = process.env;
     const t = new TgClient(TG_TOKEN);
     await t.startPolling();

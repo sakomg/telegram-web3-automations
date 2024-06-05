@@ -5,19 +5,17 @@ import logger from '../logger/logger.js';
 const playBlumGame = async (browser, appUrl) => {
   logger.debug('🎮 Blum');
 
-  let intervalId = null;
   const page = await browser.newPage();
   await page.waitForNetworkIdle();
 
   try {
     await Promise.all([page.goto(appUrl), page.waitForNavigation()]);
-    await delay(5000);
+    await delay(7000);
+
+    const intiBalance = await extractBalance(page);
+    logger.debug(`💰 Balance ${intiBalance}`);
 
     try {
-      intervalId = setInterval(async () => {
-        await checkIssueAndResetIfNeeded(page);
-      }, 5000);
-
       const continueButtonXpath = "//button[contains(., 'Continue')]";
       if (await waitForButton(page, continueButtonXpath)) {
         logger.info('Daily rewards step', 'blum');
@@ -26,10 +24,11 @@ const playBlumGame = async (browser, appUrl) => {
       }
 
       await claimRewards(page);
+      const [currentBalance, currentTickets] = await Promise.all([extractBalance(page), extractTickets(page)]);
+      logger.debug(`💰 Balance ${currentBalance}, 🎟️ Tickets ${currentTickets}`);
     } catch (error) {
       logger.error(`An error occurred during gameplay: ${error}`, 'blum');
     } finally {
-      if (intervalId != null) clearInterval(intervalId);
       await clearLocalStorage(page);
       await page.close();
     }
@@ -68,23 +67,26 @@ const claimRewards = async (page) => {
   }
 };
 
-const checkIssueAndResetIfNeeded = async (page) => {
-  try {
-    const hasError = await hasElement(page, '.error.page > .title');
-    if (hasError) {
-      const resetButtonSelector = '.error.page > .reset';
-      const resetButton = await page.waitForSelector(resetButtonSelector);
-      if (resetButton) {
-        await resetButton.click();
-        await randomDelay(3100, 3500);
-        logger.info('Page reset after error', 'blum');
-      } else {
-        logger.warning('Reset button not found on error page', 'blum');
-      }
-    }
-  } catch (error) {
-    logger.error(`Error in checkIssueAndResetIfNeeded: ${error}`, 'blum');
-  }
+const extractBalance = async (page) => {
+  const value = await page.evaluate(() => {
+    const elements = document.querySelectorAll('.kit-counter-animation.value .el-char');
+    let result = '';
+    elements.forEach((el) => {
+      result += el.textContent;
+    });
+    return result;
+  });
+
+  return value || '[None]';
+};
+
+const extractTickets = async (page) => {
+  const extractedValue = await page.evaluate(() => {
+    const element = document.querySelector('.title-with-balance .pass');
+    return element ? element.textContent.trim().replace(/\D/g, '') : null;
+  });
+
+  return extractedValue || '[None]';
 };
 
 export default playBlumGame;

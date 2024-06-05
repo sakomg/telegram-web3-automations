@@ -1,10 +1,13 @@
 import axios from 'axios';
 
+const ADS_API_URL = 'http://local.adspower.net:50325/api';
+const ADS_API_VERSION = 'v1';
+
 export const getGeneralProfile = async () => {
   const result = { success: true, message: null };
   const options = {
     method: 'GET',
-    url: 'http://local.adspower.net:50325/api/v1/user/list?page=1&page_size=10',
+    url: `${ADS_API_URL}/${ADS_API_VERSION}/user/list?page=1&page_size=10`,
   };
 
   try {
@@ -28,6 +31,7 @@ export const getGeneralProfile = async () => {
 export const updateProfileProxy = async (userId, options) => {
   const result = { success: true, message: null };
   try {
+    // TODO: fingerprint_config: {}
     const data = {
       user_id: userId,
       user_proxy_config: {
@@ -46,8 +50,18 @@ export const updateProfileProxy = async (userId, options) => {
       body: JSON.stringify(data),
     };
 
-    const response = await fetch('http://local.adspower.net:50325/api/v1/user/update', requestOptions);
-    result.message = await response.json();
+    const response = await fetch(`${ADS_API_URL}/${ADS_API_VERSION}/user/update`, requestOptions);
+    const json = await response.json();
+
+    const responseObject = JSON.parse(JSON.stringify(json));
+
+    if (responseObject.code != 0) {
+      result.success = false;
+      result.message = json;
+    }
+
+    result.message = json;
+    result.success = true;
   } catch (error) {
     result.success = false;
     result.message = error;
