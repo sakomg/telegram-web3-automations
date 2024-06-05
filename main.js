@@ -20,7 +20,8 @@ import { getRandomNumberBetween, randomDelay } from './utils/delay.js';
 
 function scheduleTask() {
   const taskTime = new Date(Date.now() + getRandomNumberBetween(181, 228) * 60 * 1000);
-  logger.debug(`Fire on ${taskTime.getHours()}:${taskTime.getMinutes()}`);
+  const fireTime = `${taskTime.getHours()}:${taskTime.getMinutes()}`;
+  logger.debug(`Fire on ${fireTime}`);
   const job = schedule.scheduleJob(taskTime, async () => {
     executeTask();
     job.cancel();
@@ -51,18 +52,18 @@ async function executeTask() {
 }
 
 async function startPlayingGames(userId, tgApps) {
-  let iterationCounter = 1;
   const shuffledTgApps = shuffleArray(tgApps);
   logger.info(`Users queue: ${shuffledTgApps.map((app) => app.username).join(' > ')}`);
   for (const tgApp of shuffledTgApps) {
     if (tgApp.active) {
-      logger.debug(`#${iterationCounter} ${tgApp.username} - in progress...`);
+      logger.debug(`👍 #${tgApp.id} ${tgApp.username}`);
       const updateResult = await updateProfileProxy(userId, tgApp.proxy);
       if (updateResult.success) {
         logger.info(`Successfully updated proxy: ${JSON.stringify(updateResult.message)}`);
         const openResult = await adsOpenBrowser(userId);
         const browser = await puppeteer.connect({
           browserWSEndpoint: openResult?.data?.ws?.puppeteer,
+          defaultViewport: null,
         });
         for (const [appName, appUrl] of Object.entries(tgApp.games)) {
           if (appUrl) {
@@ -77,9 +78,8 @@ async function startPlayingGames(userId, tgApps) {
         logger.error(updateResult.message);
       }
     } else {
-      logger.debug(`#${iterationCounter} ${tgApp.username} - inactive`);
+      logger.debug(`👎 #${tgApp.id} ${tgApp.username}`);
     }
-    iterationCounter++;
   }
 }
 

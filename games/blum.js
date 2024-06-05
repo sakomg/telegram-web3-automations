@@ -13,7 +13,15 @@ const playBlumGame = async (browser, appUrl) => {
     await delay(7000);
 
     const intiBalance = await extractBalance(page);
-    logger.debug(`💰 Balance ${intiBalance}`);
+    logger.debug(`💰 Balance ${intiBalance} (attempt 1)`);
+
+    if (intiBalance === '[None]') {
+      const delayValue = 8000;
+      logger.info(`Additional delay ${delayValue / 1000}s`);
+      await delay(delayValue);
+      const intiBalance = await extractBalance(page);
+      logger.debug(`💰 Balance ${intiBalance} (attempt 2)`);
+    }
 
     try {
       const continueButtonXpath = "//button[contains(., 'Continue')]";
