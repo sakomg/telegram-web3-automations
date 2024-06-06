@@ -11,6 +11,7 @@ import { config } from 'dotenv';
 import { getGeneralProfile, updateProfileProxy } from './ads/profiles.js';
 import { shuffleArray } from './utils/shuffle.js';
 import { getRandomNumberBetween, randomDelay } from './utils/delay.js';
+import { formatTime } from './utils/datetime.js';
 
 (function play() {
   config();
@@ -20,8 +21,7 @@ import { getRandomNumberBetween, randomDelay } from './utils/delay.js';
 
 function scheduleTask() {
   const taskTime = new Date(Date.now() + getRandomNumberBetween(181, 228) * 60 * 1000);
-  const fireTime = `${taskTime.getHours()}:${taskTime.getMinutes()}`;
-  logger.fireTime(`||| Fire on ${fireTime} |||`);
+  logger.fireTime(`🕒 NEXT FIRE ON ${formatTime(taskTime)} 🕒`);
   const job = schedule.scheduleJob(taskTime, async () => {
     executeTask();
     job.cancel();

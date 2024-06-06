@@ -29,8 +29,7 @@ class LoggerWithReports extends Logger {
 
   logsAsReport = () => {
     const res = this.#logMessages.join('\r\n');
-
-    return `${res} \r\n ${this.#time}`;
+    return `${res} \r\n\r\n ${this.#time}`;
   };
 }
 
