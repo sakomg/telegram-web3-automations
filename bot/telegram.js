@@ -8,7 +8,23 @@ export default class TgClient {
   }
 
   async sendMessageToUser(message, chatId, mode = 'HTML') {
-    await this.#bot.sendMessage(chatId, message, { parse_mode: mode });
+    const MAX_LENGTH = 4096;
+
+    if (message.length <= MAX_LENGTH) {
+      await this.#bot.sendMessage(chatId, message, { parse_mode: mode });
+    } else {
+      let currentIndex = 0;
+      let partIndex = 1;
+      const totalParts = Math.ceil(message.length / MAX_LENGTH);
+
+      while (currentIndex < message.length) {
+        const nextChunk = message.substring(currentIndex, currentIndex + MAX_LENGTH);
+        const partMessage = `Part ${partIndex} of ${totalParts}\n\n${nextChunk}`;
+        await this.#bot.sendMessage(chatId, partMessage, { parse_mode: mode });
+        currentIndex += MAX_LENGTH;
+        partIndex++;
+      }
+    }
   }
 
   async startPolling() {
