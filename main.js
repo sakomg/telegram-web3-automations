@@ -21,7 +21,7 @@ import { getRandomNumberBetween, randomDelay } from './utils/delay.js';
 function scheduleTask() {
   const taskTime = new Date(Date.now() + getRandomNumberBetween(181, 228) * 60 * 1000);
   const fireTime = `${taskTime.getHours()}:${taskTime.getMinutes()}`;
-  logger.debug(`||| Fire on ${fireTime} |||`);
+  logger.fireTime(`||| Fire on ${fireTime} |||`);
   const job = schedule.scheduleJob(taskTime, async () => {
     executeTask();
     job.cancel();
