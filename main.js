@@ -69,20 +69,43 @@ class ExecuteContainer {
         const updateResult = await updateProfileProxy(userId, tgApp.proxy);
         if (updateResult.success) {
           logger.info(`Successfully updated proxy: ${JSON.stringify(updateResult.message)}`);
-          const openResult = await adsOpenBrowser(userId);
-          const browser = await puppeteer.connect({
-            browserWSEndpoint: openResult?.data?.ws?.puppeteer,
-            defaultViewport: null,
-          });
-          for (const [appName, appUrl] of Object.entries(tgApp.games)) {
-            if (appUrl) {
-              await this.defineAndRunApplication(browser, appName, appUrl);
-            } else {
-              logger.warning(`There is no link to the [${appName}] app`);
+
+          let openResult;
+          let wsEndpoint;
+          let retryCount = 0;
+          const maxRetries = 3;
+
+          while (retryCount < maxRetries && !wsEndpoint) {
+            try {
+              openResult = await adsOpenBrowser(userId);
+              wsEndpoint = openResult?.data?.ws?.puppeteer;
+              if (!wsEndpoint) {
+                throw new Error('WebSocket endpoint not found');
+              }
+            } catch (error) {
+              logger.error(`Attempt ${retryCount + 1} failed: ${error.message}`);
+              retryCount++;
+              await randomDelay(1, 3, 's');
             }
           }
-          await randomDelay(4, 8, 's');
-          await browser.close();
+
+          if (wsEndpoint) {
+            const browser = await puppeteer.connect({
+              browserWSEndpoint: wsEndpoint,
+              defaultViewport: null,
+            });
+            for (const [appName, appUrl] of Object.entries(tgApp.games)) {
+              if (appUrl) {
+                await this.defineAndRunApplication(browser, appName, appUrl);
+              } else {
+                logger.warning(`There is no link to the [${appName}] app`);
+              }
+            }
+            await randomDelay(4, 8, 's');
+            await browser.close();
+          } else {
+            logger.error(`Failed to open browser: WebSocket endpoint is not defined after ${maxRetries} attempts`);
+          }
         } else {
           logger.error(updateResult.message);
         }
