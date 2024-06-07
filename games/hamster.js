@@ -182,7 +182,7 @@ async function navigateToTab(page, tabName) {
 
 async function startRandomClick(page, energyThreshold, minInterval, maxInterval) {
   let elapsedTime = 0;
-  let maxDuration = getRandomNumberBetween(2 * 60 * 1000, 3 * 60 * 1000);
+  let maxDuration = getRandomNumberBetween(1.5 * 60 * 1000, 2.5 * 60 * 1000);
   logger.info('Clicker duration: ' + (maxDuration / 60000).toFixed(2));
 
   const runLoop = async () => {

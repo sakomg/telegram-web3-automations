@@ -2,7 +2,6 @@ import Logger from '@ptkdev/logger';
 
 class LoggerWithReports extends Logger {
   #logMessages = [];
-  #time = null;
 
   constructor(options) {
     super(options);
@@ -10,7 +9,7 @@ class LoggerWithReports extends Logger {
 
   debug = (message, tag) => {
     super.debug(message, tag);
-    this.#logMessages.push(`🐛 <b>[DEBUG]</b> ${message}`);
+    this.#logMessages.push(`⚙️ <b>[DEBUG]</b> ${message}`);
   };
 
   warning = (message, tag) => {
@@ -23,13 +22,10 @@ class LoggerWithReports extends Logger {
     this.#logMessages.push(`❌ <b>[ERROR]</b> ${message}`);
   };
 
-  fireTime = (message) => {
-    this.#time = message;
-  };
-
   logsAsReport = () => {
-    const res = this.#logMessages.join('\r\n');
-    return `${res} \r\n\r\n ${this.#time}`;
+    const logsAsString = this.#logMessages.join('\r\n');
+    this.#logMessages = [];
+    return logsAsString;
   };
 }
 
