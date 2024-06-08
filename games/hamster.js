@@ -19,28 +19,31 @@ const playHamsterGame = async (browser, appUrl) => {
     const balanceSelector = 'div.user-balance-large > div > p';
 
     if (await waitForButton(page, thanksButtonXpath, 3000)) {
-      logger.info('Thank you button found.', 'hamster');
+      logger.info('> Thank you button found.');
       await clickButton(page, thanksButtonXpath);
       await randomDelay(1000, 2000);
     }
 
+    let initialBalance = await extractValue(page, balanceSelector);
+    logger.debug(`💰 Initial balance ${initialBalance}`);
+
     logger.info('Clicker start', 'hamster');
-    await startRandomClick(page, 25, 100, 250);
+    await startRandomClick(page, 25, 100, 220);
     logger.info('Clicker stopped', 'hamster');
     await randomDelay(3, 5, 's');
 
     await clickLinkWithHref(page, '/clicker/mine');
     const tabsToFarm = ['Markets', 'PR&Team', 'Legal'];
     for (const tabName of shuffleArray(tabsToFarm)) {
-      logger.info('Tab to handle: ' + tabName);
+      logger.info('> Tab to handle: ' + tabName);
       let balanceValue = await extractValue(page, balanceSelector);
-      logger.info('*** Actual balance: ' + balanceValue);
+      logger.info('>>> Actual balance: ' + balanceValue);
       await navigateToTab(page, tabName);
       await delay(1500);
       await processMineItems(page, balanceValue);
     }
-    let b = await extractValue(page, balanceSelector);
-    logger.debug('Enough for now, balance: ' + b);
+    let balanceValue = await extractValue(page, balanceSelector);
+    logger.debug('💰 Finished mining, balance: ' + balanceValue);
     await randomDelay(2000, 3500);
   } catch (error) {
     logger.error(`An error occurred during initial setup: ${error}`, 'hamster');
@@ -110,7 +113,6 @@ async function processMineItems(page, initialBalance) {
 
     for (const element of cardElements) {
       const insufficientElement = await element.$('.upgrade-item-detail .price.is-grayscale');
-      logger.info(insufficientElement);
       if (insufficientElement) {
         logger.info('Insufficient balance to click on this card, so just skip');
         continue;
@@ -169,7 +171,7 @@ async function processMineItems(page, initialBalance) {
       } catch (e) {
         logger.info('Error in clicking card: ' + e);
       } finally {
-        await randomDelay(1000, 1500);
+        await randomDelay(1000, 1600);
       }
     }
   }
