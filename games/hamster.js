@@ -30,7 +30,7 @@ const playHamsterGame = async (browser, appUrl) => {
     await randomDelay(3, 5, 's');
 
     await clickLinkWithHref(page, '/clicker/mine');
-    const tabsToFarm = ['Markets', 'PR&Team'];
+    const tabsToFarm = ['Markets', 'PR&Team', 'Legal'];
     for (const tabName of shuffleArray(tabsToFarm)) {
       logger.info('Tab to handle: ' + tabName);
       let balanceValue = await extractValue(page, balanceSelector);
@@ -109,6 +109,12 @@ async function processMineItems(page, initialBalance) {
     }
 
     for (const element of cardElements) {
+      const insufficientElement = await element.$('.upgrade-item-detail .price.is-grayscale');
+      logger.info(insufficientElement);
+      if (insufficientElement) {
+        logger.info('Insufficient balance to click on this card, so just skip');
+        continue;
+      }
       const cardValueElement = await element.$('.upgrade-item-detail .price-value');
       const cardValue = await cardValueElement.evaluate((node) => {
         const text = node.textContent.trim().replace(/,/g, '');
