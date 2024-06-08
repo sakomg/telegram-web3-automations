@@ -30,7 +30,7 @@ const playHamsterGame = async (browser, appUrl) => {
     await randomDelay(3, 5, 's');
 
     await clickLinkWithHref(page, '/clicker/mine');
-    const tabsToFarm = ['Markets', 'PR&Team', 'Legal'];
+    const tabsToFarm = ['Markets', 'PR&Team'];
     for (const tabName of shuffleArray(tabsToFarm)) {
       logger.info('Tab to handle: ' + tabName);
       let balanceValue = await extractValue(page, balanceSelector);
