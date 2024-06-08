@@ -27,6 +27,15 @@ export default class TgClient {
     }
   }
 
+  async sendAndPinMessage(message, chatId, mode = 'HTML') {
+    const sentMessage = await this.#bot.sendMessage(chatId, message, { parse_mode: mode });
+    if (sentMessage.message_id) {
+      this.#bot.pinChatMessage(chatId, sentMessage.message_id, {
+        disable_notification: false,
+      });
+    }
+  }
+
   async startPolling() {
     await this.#bot.startPolling();
   }

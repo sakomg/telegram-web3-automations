@@ -34,7 +34,7 @@ class ExecuteContainer {
 
   scheduleTask() {
     const taskTime = new Date(Date.now() + getRandomNumberBetween(181, 228) * 60 * 1000);
-    this.#telegram.client.sendMessageToUser(`🕒 NEXT FIRE ON <b>${formatTime(taskTime)}</b> 🕒`, this.#telegram.receiverId);
+    this.#telegram.client.sendAndPinMessage(`🕒 NEXT FIRE ON <b>${formatTime(taskTime)}</b> 🕒`, this.#telegram.receiverId);
     const job = schedule.scheduleJob(taskTime, async () => {
       this.executeTask();
       job.cancel();
