@@ -30,7 +30,7 @@ const playIcebergGame = async (browser, appUrl) => {
     await delay(2000);
     const actualBalance = await extractBalance(page);
     logger.debug(`💰 End ::: ${actualBalance}`);
-    await delay(150000); // for test
+    await delay(1500);
   } catch (e) {
     logger.error(e, 'iceberg');
   } finally {
