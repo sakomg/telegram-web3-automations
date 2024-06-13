@@ -48,7 +48,6 @@ export const clickLinkWithHref = async (page, href) => {
   const buttonFound = await waitForButton(page, xpath);
   if (buttonFound) {
     await clickButton(page, xpath);
-    logger.info(`Clicked on link with href: ${href}`);
   } else {
     logger.warning(`Link with href ${href} not found.`);
   }
