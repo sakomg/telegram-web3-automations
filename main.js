@@ -112,8 +112,8 @@ class ExecuteContainer {
       } else {
         logger.debug(`👎 #${tgApp.id}`);
       }
-      await this.#telegram.client.sendMessageToUser(logger.logsAsReport(), this.#telegram.receiverId);
     }
+    await this.#telegram.client.sendCSV(await logger.logsAsCSVBuffer(), this.#telegram.receiverId);
   }
 
   async defineAndRunApplication(browser, appName, appUrl) {

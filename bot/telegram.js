@@ -36,6 +36,22 @@ export default class TgClient {
     }
   }
 
+  async sendCSV(buffer, chatId) {
+    const now = new Date();
+    const time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    const response = await this.#bot.sendDocument(
+      chatId,
+      buffer,
+      {},
+      {
+        filename: `logs-${time}.csv`,
+        contentType: 'text/csv',
+      },
+    );
+
+    return response;
+  }
+
   async startPolling() {
     await this.#bot.startPolling();
   }

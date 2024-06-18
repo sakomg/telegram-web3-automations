@@ -1,4 +1,5 @@
 import Logger from '@ptkdev/logger';
+import { stringify } from 'csv-stringify';
 
 class LoggerWithReports extends Logger {
   #logMessages = [];
@@ -9,23 +10,35 @@ class LoggerWithReports extends Logger {
 
   debug = (message, tag) => {
     super.debug(message, tag);
-    this.#logMessages.push(`⚙️ <b>[DEBUG]</b> ${message}`);
+    this.#logMessages.push(['DEBUG', message]);
   };
 
   warning = (message, tag) => {
     super.warning(message, tag);
-    this.#logMessages.push(`⚠️ <b>[WARN]</b> ${message}`);
+    this.#logMessages.push(['WARN', message]);
   };
 
   error = (message, tag) => {
     super.error(message, tag);
-    this.#logMessages.push(`❌ <b>[ERROR]</b> ${message}`);
+    this.#logMessages.push(['ERROR', message]);
   };
 
   logsAsReport = () => {
-    const logsAsString = this.#logMessages.join('\r\n');
+    const logsAsString = this.#logMessages.map((log) => `⚙️ <b>[${log.at(0)}]</b> ${log.at(1)}`).join('\r\n');
     this.#logMessages = [];
     return logsAsString;
+  };
+
+  logsAsCSVBuffer = async () => {
+    return new Promise((resolve, reject) => {
+      stringify(this.#logMessages, { header: true, columns: ['Level', 'Message'] }, (err, output) => {
+        if (err) {
+          return reject(err);
+        }
+        const buffer = Buffer.from(output, 'utf8');
+        resolve(buffer);
+      });
+    });
   };
 }
 
