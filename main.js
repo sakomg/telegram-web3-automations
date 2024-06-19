@@ -166,6 +166,7 @@ class ExecuteContainer {
     while (retryCount < maxRetries && !wsEndpoint) {
       try {
         openResult = await adsOpenBrowser(profileUserId);
+        logger.info(openResult);
         if (openResult == null) {
           throw new Error('Cannot open ads power');
         }
