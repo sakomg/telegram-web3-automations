@@ -1,5 +1,4 @@
 import Logger from '@ptkdev/logger';
-import { stringify } from 'csv-stringify';
 
 class LoggerWithReports extends Logger {
   #logMessages = [];
@@ -36,18 +35,6 @@ class LoggerWithReports extends Logger {
     const logsAsString = this.#logMessages.map((log) => `⚙️ <b>[${log[3]}]</b> ${log[4]}`).join('\r\n');
     this.#logMessages = [];
     return logsAsString;
-  };
-
-  logsAsCSVBuffer = async () => {
-    return new Promise((resolve, reject) => {
-      stringify(this.#logMessages, { header: true, columns: ['Number', 'User', 'Level', 'Message'] }, (err, output) => {
-        if (err) {
-          return reject(err);
-        }
-        const buffer = Buffer.from(output, 'utf8');
-        resolve(buffer);
-      });
-    });
   };
 }
 
