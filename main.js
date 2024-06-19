@@ -31,7 +31,7 @@ class ExecuteContainer {
 
   play() {
     if (this.#initRun == 'true') this.executeTask();
-    // this.scheduleTask();
+    this.scheduleTask();
   }
 
   scheduleTask() {
@@ -64,7 +64,7 @@ class ExecuteContainer {
   async startPlayingGames(profileUserId, tgApps) {
     const totalResultGames = [];
 
-    for (const tgApp of shuffleArray(tgApps.slice(0, 2))) {
+    for (const tgApp of shuffleArray(tgApps)) {
       const rawResultGames = await this.playGamesByAccount(profileUserId, tgApp);
       const resultGames = this.prepareResultGames(rawResultGames, tgApp);
 
@@ -92,6 +92,95 @@ class ExecuteContainer {
     }
 
     await Promise.all(promises);
+  }
+
+  async playGamesByAccount(profileUserId, tgApp) {
+    let resultGames = [];
+
+    if (!tgApp.active) {
+      logger.debug(`👎 #${tgApp.id}`);
+      return;
+    }
+
+    logger.debug(`👍 #${tgApp.id}`);
+
+    const updateResult = await updateProfileProxy(profileUserId, tgApp.proxy);
+
+    if (!updateResult.success) {
+      logger.error(updateResult.message);
+      return;
+    }
+
+    logger.info(`Successfully updated proxy: ${JSON.stringify(updateResult.message)}`);
+
+    const maxRetries = 3;
+    const wsEndpoint = await this.establishWsEndpoint(profileUserId, maxRetries);
+
+    if (!wsEndpoint) {
+      logger.error(`Failed to open browser: WebSocket endpoint is not defined after ${maxRetries} attempts`);
+    }
+
+    const browser = await puppeteer.connect({
+      browserWSEndpoint: wsEndpoint,
+      defaultViewport: null,
+    });
+    for (const [appName, appUrl] of Object.entries(tgApp.games)) {
+      if (appUrl) {
+        const resultGame = await this.runApp(browser, appName, appUrl);
+        resultGames.push({
+          game: appName,
+          data: resultGame,
+        });
+      } else {
+        logger.warning(`There is no link to the [${appName}] app`);
+      }
+    }
+    await randomDelay(4, 8, 's');
+
+    await browser.close();
+
+    return resultGames;
+  }
+
+  async runApp(browser, appName, appUrl) {
+    const nameToFunc = {
+      blum: playBlumGame,
+      iceberg: playIcebergGame,
+      hamster: playHamsterGame,
+    };
+
+    const func = await nameToFunc[appName];
+
+    if (!func) {
+      throw new Error(`[${appName}] don't supported yet`);
+    }
+
+    return await func(browser, appUrl);
+  }
+
+  async establishWsEndpoint(profileUserId, maxRetries) {
+    let openResult = undefined;
+    let wsEndpoint = undefined;
+    let retryCount = 0;
+
+    while (retryCount < maxRetries && !wsEndpoint) {
+      try {
+        openResult = await adsOpenBrowser(profileUserId);
+        if (openResult == null) {
+          throw new Error('Cannot open ads power');
+        }
+        wsEndpoint = openResult?.data?.ws?.puppeteer;
+        if (!wsEndpoint) {
+          throw new Error('WebSocket endpoint not found');
+        }
+      } catch (error) {
+        logger.error(`Attempt ${retryCount + 1} failed: ${error.message}`);
+        retryCount++;
+        await randomDelay(1, 3, 's');
+      }
+    }
+
+    return wsEndpoint;
   }
 
   prepareResultGames(resultGames, tgApp) {
@@ -153,95 +242,6 @@ class ExecuteContainer {
     }
 
     return result;
-  }
-
-  async playGamesByAccount(profileUserId, tgApp) {
-    let resultGames = [];
-
-    if (!tgApp.active) {
-      logger.debug(`👎 #${tgApp.id}`);
-      return;
-    }
-
-    logger.debug(`👍 #${tgApp.id}`);
-
-    const updateResult = await updateProfileProxy(profileUserId, tgApp.proxy);
-
-    if (!updateResult.success) {
-      logger.error(updateResult.message);
-      return;
-    }
-
-    logger.info(`Successfully updated proxy: ${JSON.stringify(updateResult.message)}`);
-
-    const maxRetries = 3;
-    const wsEndpoint = await this.establishWsEndpoint(profileUserId, maxRetries);
-
-    if (!wsEndpoint) {
-      logger.error(`Failed to open browser: WebSocket endpoint is not defined after ${maxRetries} attempts`);
-    }
-
-    const browser = await puppeteer.connect({
-      browserWSEndpoint: wsEndpoint,
-      defaultViewport: null,
-    });
-    for (const [appName, appUrl] of Object.entries(tgApp.games)) {
-      if (appUrl) {
-        const resultGame = await this.runApp(browser, appName, appUrl);
-        resultGames.push({
-          game: appName,
-          data: resultGame,
-        });
-      } else {
-        logger.warning(`There is no link to the [${appName}] app`);
-      }
-    }
-    await randomDelay(4, 8, 's');
-
-    await browser.close();
-
-    return resultGames;
-  }
-
-  async establishWsEndpoint(profileUserId, maxRetries) {
-    let openResult = undefined;
-    let wsEndpoint = undefined;
-    let retryCount = 0;
-
-    while (retryCount < maxRetries && !wsEndpoint) {
-      try {
-        openResult = await adsOpenBrowser(profileUserId);
-        if (openResult == null) {
-          throw new Error('Cannot open ads power');
-        }
-        wsEndpoint = openResult?.data?.ws?.puppeteer;
-        if (!wsEndpoint) {
-          throw new Error('WebSocket endpoint not found');
-        }
-      } catch (error) {
-        logger.error(`Attempt ${retryCount + 1} failed: ${error.message}`);
-        retryCount++;
-        await randomDelay(1, 3, 's');
-      }
-    }
-
-    return wsEndpoint;
-  }
-
-  async runApp(browser, appName, appUrl) {
-    const nameToFunc = {
-      blum: playBlumGame,
-      iceberg: playIcebergGame,
-      hamster: playHamsterGame,
-    };
-
-    const func = await nameToFunc[appName];
-
-    if (!func) {
-      throw new Error(`[${appName}] don't supported yet`);
-    }
-
-    return await func(browser, appUrl);
   }
 }
 
