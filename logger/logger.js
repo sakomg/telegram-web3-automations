@@ -3,35 +3,44 @@ import { stringify } from 'csv-stringify';
 
 class LoggerWithReports extends Logger {
   #logMessages = [];
+  #logCounter = 0;
+  #user = '[Blank]';
 
   constructor(options) {
     super(options);
   }
 
+  setUser = (user) => {
+    this.#user = user;
+  };
+
   debug = (message, tag) => {
     super.debug(message, tag);
-    this.#logMessages.push(['DEBUG', message]);
+    this.#logCounter++;
+    this.#logMessages.push([this.#logCounter, this.#user, 'DEBUG', message]);
   };
 
   warning = (message, tag) => {
     super.warning(message, tag);
-    this.#logMessages.push(['WARN', message]);
+    this.#logCounter++;
+    this.#logMessages.push([this.#logCounter, this.#user, 'WARN', message]);
   };
 
   error = (message, tag) => {
     super.error(message, tag);
-    this.#logMessages.push(['ERROR', message]);
+    this.#logCounter++;
+    this.#logMessages.push([this.#logCounter, this.#user, 'ERROR', message]);
   };
 
   logsAsReport = () => {
-    const logsAsString = this.#logMessages.map((log) => `⚙️ <b>[${log.at(0)}]</b> ${log.at(1)}`).join('\r\n');
+    const logsAsString = this.#logMessages.map((log) => `⚙️ <b>[${log[3]}]</b> ${log[4]}`).join('\r\n');
     this.#logMessages = [];
     return logsAsString;
   };
 
   logsAsCSVBuffer = async () => {
     return new Promise((resolve, reject) => {
-      stringify(this.#logMessages, { header: true, columns: ['Level', 'Message'] }, (err, output) => {
+      stringify(this.#logMessages, { header: true, columns: ['Number', 'User', 'Level', 'Message'] }, (err, output) => {
         if (err) {
           return reject(err);
         }

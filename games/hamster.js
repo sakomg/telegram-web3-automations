@@ -6,6 +6,14 @@ import { shuffleArray } from '../utils/shuffle.js';
 const playHamsterGame = async (browser, appUrl) => {
   logger.debug('🐹 Hamster Kombat');
 
+  const result = {
+    Account: null,
+    User: null,
+    BalanceBefore: -1,
+    BalanceAfter: -1,
+    ProfitPerHour: -1,
+  };
+
   const page = await browser.newPage();
   await page.waitForNetworkIdle();
 
@@ -17,6 +25,7 @@ const playHamsterGame = async (browser, appUrl) => {
 
     const thanksButtonXpath = "//button[contains(., 'Thank you')]";
     const balanceSelector = 'div.user-balance-large > div > p';
+    const profitPerHourSelector = 'div.user-stats-profit > div.price > div.price-value';
 
     if (await waitForButton(page, thanksButtonXpath, 3000)) {
       logger.info('> Thank you button found.');
@@ -26,6 +35,7 @@ const playHamsterGame = async (browser, appUrl) => {
 
     let initialBalance = await extractValue(page, balanceSelector);
     logger.debug(`💰 Initial balance ${initialBalance}`);
+    result.BalanceBefore = initialBalance;
 
     logger.info('Clicker start', 'hamster');
     await startRandomClick(page, 25, 100, 220);
@@ -43,7 +53,9 @@ const playHamsterGame = async (browser, appUrl) => {
       await processMineItems(page, balanceValue);
     }
     let balanceValue = await extractValue(page, balanceSelector);
-    logger.debug('💰 Finished mining, balance: ' + balanceValue);
+    let profitPerHourValue = await extractValue(page, profitPerHourSelector);
+    result.BalanceAfter = balanceValue;
+    result.ProfitPerHour = profitPerHourValue;
     await randomDelay(2000, 3500);
   } catch (error) {
     logger.error(`An error occurred during initial setup: ${error}`, 'hamster');
@@ -51,6 +63,8 @@ const playHamsterGame = async (browser, appUrl) => {
     await clearLocalStorage(page);
     await page.close();
   }
+
+  return result;
 };
 
 async function repeatCheckAndReload(page, maxAttempts) {
@@ -88,7 +102,7 @@ async function checkAndReload(page, timeout) {
 async function extractValue(page, selector) {
   return await page.$eval(selector, (element) => {
     const text = element.textContent.trim().replace(/,/g, '');
-    if (text.includes('K')) {
+    if (text.includes('K') || text.includes('k')) {
       return parseInt(parseFloat(text) * 1000);
     } else {
       return parseInt(text);
@@ -190,7 +204,7 @@ async function navigateToTab(page, tabName) {
 
 async function startRandomClick(page, energyThreshold, minInterval, maxInterval) {
   let elapsedTime = 0;
-  let maxDuration = getRandomNumberBetween(1.5 * 60 * 1000, 2.5 * 60 * 1000);
+  let maxDuration = getRandomNumberBetween(1 * 60 * 1000, 1.5 * 60 * 1000);
   logger.info('Clicker duration: ' + (maxDuration / 60000).toFixed(2));
 
   const runLoop = async () => {

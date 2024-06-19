@@ -8,6 +8,13 @@ const BLACK_LIST_TASKS = ['Invite 15 friends', 'Invite 10 friends', 'Invite 5 fr
 const playIcebergGame = async (browser, appUrl) => {
   logger.debug('🌊 Iceberg');
 
+  const result = {
+    Account: null,
+    User: null,
+    BalanceBefore: -1,
+    BalanceAfter: -1,
+  };
+
   const page = await browser.newPage();
   await page.waitForNetworkIdle();
 
@@ -22,6 +29,7 @@ const playIcebergGame = async (browser, appUrl) => {
     await delay(1800);
     const initBalance = await extractBalance(page);
     logger.debug(`💰 Start ::: ${initBalance}`);
+    result.BalanceBefore = initBalance;
     await checkAndClaim(page);
     await delay(1200);
     await clickLinkWithHref(page, '/tasks');
@@ -30,19 +38,22 @@ const playIcebergGame = async (browser, appUrl) => {
     await delay(2000);
     const actualBalance = await extractBalance(page);
     logger.debug(`💰 End ::: ${actualBalance}`);
+    result.BalanceAfter = actualBalance;
     await delay(1500);
   } catch (e) {
     logger.error(e, 'iceberg');
   } finally {
     await page.close();
   }
+
+  return result;
 };
 
 async function extractBalance(page) {
   const result = await page.evaluate(() => {
     const elements = document.querySelectorAll('h2.chakra-heading');
     const texts = Array.from(elements).map((element) => element.textContent.trim());
-    return texts.join(' => ');
+    return texts.length > 1 ? texts[1] : -1;
   });
 
   return result;

@@ -7,7 +7,7 @@ export default class TgClient {
     this.#bot = new TelegramBot(token);
   }
 
-  async sendMessageToUser(message, chatId, mode = 'HTML') {
+  async sendMessage(message, chatId, mode = 'HTML') {
     const MAX_LENGTH = 4096;
 
     if (message.length <= MAX_LENGTH) {
@@ -36,15 +36,15 @@ export default class TgClient {
     }
   }
 
-  async sendCSV(buffer, chatId) {
+  async sendCSVDocument(buffer, chatId, game) {
     const now = new Date();
-    const time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    const time = String(now.getHours()).padStart(2, '0') + '-' + String(now.getMinutes()).padStart(2, '0');
     const response = await this.#bot.sendDocument(
       chatId,
       buffer,
-      {},
+      { disable_notification: true },
       {
-        filename: `logs-${time}.csv`,
+        filename: `${game}-report-${time}.csv`,
         contentType: 'text/csv',
       },
     );

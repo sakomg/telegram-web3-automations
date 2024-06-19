@@ -5,6 +5,14 @@ import logger from '../logger/logger.js';
 const playBlumGame = async (browser, appUrl) => {
   logger.debug('🎮 Blum');
 
+  const result = {
+    Account: null,
+    User: null,
+    BalanceBefore: -1,
+    BalanceAfter: -1,
+    Tickets: -1,
+  };
+
   const page = await browser.newPage();
   await page.waitForNetworkIdle();
 
@@ -12,16 +20,18 @@ const playBlumGame = async (browser, appUrl) => {
     await Promise.all([page.goto(appUrl), page.waitForNavigation()]);
     await delay(7000);
 
-    const intiBalance = await extractBalance(page);
-    logger.debug(`💰 Balance ${intiBalance} (attempt 1)`);
+    let intiBalance = '[None]';
+    intiBalance = await extractBalance(page);
 
     if (intiBalance === '[None]') {
       const delayValue = 8000;
       logger.info(`Additional delay ${delayValue / 1000}s`);
       await delay(delayValue);
-      const intiBalance = await extractBalance(page);
+      intiBalance = await extractBalance(page);
       logger.debug(`💰 Balance ${intiBalance} (attempt 2)`);
     }
+
+    result.BalanceBefore = intiBalance;
 
     try {
       const continueButtonXpath = "//button[contains(., 'Continue')]";
@@ -33,7 +43,8 @@ const playBlumGame = async (browser, appUrl) => {
 
       await claimRewards(page);
       const [currentBalance, currentTickets] = await Promise.all([extractBalance(page), extractTickets(page)]);
-      logger.debug(`💰 Balance ${currentBalance}, 🎟️ Tickets ${currentTickets}`);
+      result.BalanceAfter = currentBalance;
+      result.Tickets = currentTickets;
     } catch (error) {
       logger.error(`An error occurred during gameplay: ${error}`, 'blum');
     } finally {
@@ -43,6 +54,8 @@ const playBlumGame = async (browser, appUrl) => {
   } catch (error) {
     logger.error(`An error occurred during initial setup: ${error}`, 'blum');
   }
+
+  return result;
 };
 
 const claimRewards = async (page) => {
