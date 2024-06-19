@@ -113,6 +113,7 @@ class ExecuteContainer {
 
     logger.info(`Successfully updated proxy: ${JSON.stringify(updateResult.message)}`);
 
+    let browser = undefined;
     const maxRetries = 3;
     const wsEndpoint = await this.establishWsEndpoint(profileUserId, maxRetries);
 
@@ -120,10 +121,16 @@ class ExecuteContainer {
       logger.error(`Failed to open browser: WebSocket endpoint is not defined after ${maxRetries} attempts`);
     }
 
-    const browser = await puppeteer.connect({
-      browserWSEndpoint: wsEndpoint,
-      defaultViewport: null,
-    });
+    try {
+      browser = await puppeteer.connect({
+        browserWSEndpoint: wsEndpoint,
+        defaultViewport: null,
+      });
+    } catch (e) {
+      logger.error(e);
+      return;
+    }
+
     for (const [appName, appUrl] of Object.entries(tgApp.games)) {
       if (appUrl) {
         const resultGame = await this.runApp(browser, appName, appUrl);
