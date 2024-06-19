@@ -185,7 +185,7 @@ class ExecuteContainer {
       } catch (error) {
         logger.error(`Attempt ${retryCount + 1} failed: ${error.message}`);
         retryCount++;
-        await randomDelay(1, 3, 's');
+        await randomDelay(4, 8, 's');
       }
     }
 
