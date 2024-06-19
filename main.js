@@ -128,7 +128,7 @@ class ExecuteContainer {
         defaultViewport: null,
       });
     } catch (e) {
-      logger.error(e);
+      logger.error(`Cannot connect to ${wsEndpoint}. ${e}`);
       return resultGames;
     }
 
