@@ -66,9 +66,10 @@ class ExecuteContainer {
 
     for (const tgApp of shuffleArray(tgApps)) {
       const rawResultGames = await this.playGamesByAccount(profileUserId, tgApp);
-      const resultGames = this.prepareResultGames(rawResultGames, tgApp);
-
-      totalResultGames.push(...resultGames);
+      if (rawResultGames.length) {
+        const resultGames = this.prepareResultGames(rawResultGames, tgApp);
+        totalResultGames.push(...resultGames);
+      }
     }
 
     const groupedGames = this.groupValuesByGame(totalResultGames);
@@ -99,7 +100,7 @@ class ExecuteContainer {
 
     if (!tgApp.active) {
       logger.debug(`👎 #${tgApp.id}`);
-      return;
+      return resultGames;
     }
 
     logger.debug(`👍 #${tgApp.id}`);
@@ -108,7 +109,7 @@ class ExecuteContainer {
 
     if (!updateResult.success) {
       logger.error(updateResult.message);
-      return;
+      return resultGames;
     }
 
     logger.info(`Successfully updated proxy: ${JSON.stringify(updateResult.message)}`);
@@ -128,7 +129,7 @@ class ExecuteContainer {
       });
     } catch (e) {
       logger.error(e);
-      return;
+      return resultGames;
     }
 
     for (const [appName, appUrl] of Object.entries(tgApp.games)) {
