@@ -19,6 +19,7 @@ config();
 
 class ExecuteContainer {
   #initRun = process.env.INIT_RUN;
+  #processedAccounts = new Set();
   #telegram = {
     client: null,
     token: process.env.TG_TOKEN,
@@ -30,8 +31,10 @@ class ExecuteContainer {
   }
 
   play() {
-    if (this.#initRun == 'true') this.executeTask();
-    this.scheduleTask();
+    this.#initRun == 'true' ? this.executeTask() : this.scheduleTask();
+    setInterval(() => {
+      logger.debug('Processed >>> ' + Array.from(this.#processedAccounts).join(', '));
+    }, 60000);
   }
 
   scheduleTask() {
@@ -40,7 +43,6 @@ class ExecuteContainer {
     const job = schedule.scheduleJob(taskTime, async () => {
       this.executeTask();
       job.cancel();
-      this.scheduleTask();
     });
   }
 
@@ -52,7 +54,17 @@ class ExecuteContainer {
     }
     try {
       const [_, tgApps] = await Promise.all([this.#telegram.client.startPolling(), fs.readFile('./data/apps.json', 'utf8')]);
-      await this.startPlayingGames(result.message, JSON.parse(tgApps));
+      const tgApplications = JSON.parse(tgApps);
+      await this.startPlayingGames(result.message, tgApplications);
+
+      if (this.#processedAccounts.size == tgApplications.length) {
+        logger.debug(`Success processed all accounts (${tgApplications.length}), scheduling process...`);
+        this.#processedAccounts.clear();
+        this.scheduleTask();
+      } else {
+        logger.debug(`Only ${this.#processedAccounts.size} accounts processed, run other again.`);
+        this.executeTask();
+      }
     } catch (e) {
       console.log(e);
       await this.#telegram.client.sendMessage(`😫 ${e}`, this.#telegram.receiverId);
@@ -65,10 +77,14 @@ class ExecuteContainer {
     const totalResultGames = [];
 
     for (const tgApp of shuffleArray(tgApps)) {
+      if (this.#processedAccounts.has(tgApp.id)) {
+        continue;
+      }
       const rawResultGames = await this.playGamesByAccount(profileUserId, tgApp);
       if (rawResultGames.length) {
         const resultGames = this.prepareResultGames(rawResultGames, tgApp);
         totalResultGames.push(...resultGames);
+        this.#processedAccounts.add(tgApp.id);
       }
     }
 
@@ -174,7 +190,6 @@ class ExecuteContainer {
     while (retryCount < maxRetries && !wsEndpoint) {
       try {
         openResult = await adsOpenBrowser(profileUserId);
-        logger.info(openResult);
         if (openResult == null) {
           throw new Error('Cannot open ads power');
         }
