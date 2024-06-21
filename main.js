@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import fs from 'node:fs/promises';
 import logger from './logger/logger.js';
 import puppeteer from 'puppeteer';
@@ -8,14 +9,10 @@ import playIcebergGame from './games/iceberg.js';
 import playHamsterGame from './games/hamster.js';
 import TgClient from './bot/telegram.js';
 import ReportGenerator from './reports/report.js';
-import { config } from 'dotenv';
 import { getGeneralProfile, updateProfileProxy } from './ads/profiles.js';
 import { shuffleArray } from './utils/shuffle.js';
 import { getRandomNumberBetween, randomDelay } from './utils/delay.js';
 import { formatTime } from './utils/datetime.js';
-import { capitalizeFirstLetter } from './utils/text.js';
-
-config();
 
 class ExecuteContainer {
   #initRun = process.env.INIT_RUN;
@@ -32,9 +29,6 @@ class ExecuteContainer {
 
   play() {
     this.#initRun == 'true' ? this.executeTask() : this.scheduleTask();
-    setInterval(() => {
-      logger.debug('Processed >>> ' + Array.from(this.#processedAccounts).join(', '));
-    }, 60000);
   }
 
   scheduleTask() {
@@ -55,10 +49,16 @@ class ExecuteContainer {
     try {
       const [_, tgApps] = await Promise.all([this.#telegram.client.startPolling(), fs.readFile('./data/apps.json', 'utf8')]);
       const tgApplications = JSON.parse(tgApps);
-      await this.startPlayingGames(result.message, tgApplications);
+      const reportData = [];
+      const totalResultGames = await this.startPlayingGames(result.message, tgApplications);
+      reportData.push(...totalResultGames);
+      const summaryText = this.prepareBriefSummaryText();
+      await this.#telegram.client.sendMessage(summaryText, this.#telegram.receiverId);
 
       if (this.#processedAccounts.size == tgApplications.length) {
         logger.debug(`Success processed all accounts (${tgApplications.length}), scheduling process...`);
+        const groupedGames = this.groupValuesByGame(reportData);
+        await this.sendReports(groupedGames);
         this.#processedAccounts.clear();
         this.scheduleTask();
       } else {
@@ -88,27 +88,7 @@ class ExecuteContainer {
       }
     }
 
-    const groupedGames = this.groupValuesByGame(totalResultGames);
-    const reportInstance = new ReportGenerator();
-    const reports = [];
-
-    const summaryText = this.prepareBriefSummaryText(groupedGames);
-    await this.#telegram.client.sendMessage(summaryText, this.#telegram.receiverId);
-
-    for (const game in groupedGames) {
-      const data = groupedGames[game];
-      const report = reportInstance.generateReport(game, data);
-      reports.push({ game, report });
-    }
-
-    const promises = [];
-
-    for (const item of reports) {
-      const promiseResult = this.#telegram.client.sendCSVDocument(item.report, this.#telegram.receiverId, item.game);
-      promises.push(promiseResult);
-    }
-
-    await Promise.all(promises);
+    return totalResultGames;
   }
 
   async playGamesByAccount(profileUserId, tgApp) {
@@ -207,6 +187,15 @@ class ExecuteContainer {
     return wsEndpoint;
   }
 
+  async sendReports(groupedGames) {
+    const reportInstance = new ReportGenerator();
+    for (const game in groupedGames) {
+      const data = groupedGames[game];
+      const report = reportInstance.generateReport(game, data);
+      await this.#telegram.client.sendCSVDocument(report, this.#telegram.receiverId, game);
+    }
+  }
+
   prepareResultGames(resultGames, tgApp) {
     const result = [];
 
@@ -230,15 +219,11 @@ class ExecuteContainer {
     return result;
   }
 
-  prepareBriefSummaryText(groupedGames) {
+  prepareBriefSummaryText() {
     let summaryText = '🎮 Game Results Summary:\r\n\r\n';
 
-    for (const game in groupedGames) {
-      summaryText += `🕹️ <b>${capitalizeFirstLetter(game)}</b>: ${groupedGames[game].length} accounts\n`;
-    }
-
-    summaryText += '\r\n📂 Detailed reports are being sent as CSV files.';
-    summaryText += '\r\n\r\n⏳ Generating detailed reports, please wait...';
+    summaryText += `- Processed accounts (${this.#processedAccounts.size}): ${Array.from(this.#processedAccounts).join(' | ')}`;
+    summaryText += '\r\n\r\n- 📂 Detailed reports are being sent as CSV files.';
 
     return summaryText.trim();
   }

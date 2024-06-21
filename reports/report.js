@@ -12,7 +12,7 @@ const reportHeaders = {
   },
 };
 
-class ReportGenerator {
+export default class ReportGenerator {
   generateReport = (gameType, data) => {
     const { headers } = reportHeaders[gameType];
     const csvContent = this.jsonToCSVBuffer(data, headers);
@@ -35,5 +35,3 @@ class ReportGenerator {
     return csvRows.join('\n');
   }
 }
-
-export default ReportGenerator;
