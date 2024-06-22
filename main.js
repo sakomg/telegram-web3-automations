@@ -17,6 +17,7 @@ import { formatTime } from './utils/datetime.js';
 class ExecuteContainer {
   #initRun = process.env.INIT_RUN;
   #processedAccounts = new Set();
+  #reports = [];
   #telegram = {
     client: null,
     token: process.env.TG_TOKEN,
@@ -49,18 +50,16 @@ class ExecuteContainer {
     try {
       const [_, tgApps] = await Promise.all([this.#telegram.client.startPolling(), fs.readFile('./data/apps.json', 'utf8')]);
       const tgApplications = JSON.parse(tgApps);
-      const reportData = [];
       const totalResultGames = await this.startPlayingGames(result.message, tgApplications);
-      reportData.push(...totalResultGames);
+      this.#reports.push(...totalResultGames);
       const summaryText = this.prepareBriefSummaryText();
       await this.#telegram.client.sendMessage(summaryText, this.#telegram.receiverId);
 
       if (this.#processedAccounts.size == tgApplications.length) {
         logger.debug(`Success processed all accounts (${tgApplications.length}), scheduling process...`);
-        const groupedGames = this.groupValuesByGame(reportData);
+        const groupedGames = this.groupValuesByGame(this.#reports);
         await this.sendReports(groupedGames);
-        this.#processedAccounts.clear();
-        this.scheduleTask();
+        this.clearAndScheduleTask();
       } else {
         logger.debug(`Only ${this.#processedAccounts.size} accounts processed, run other again.`);
         this.executeTask();
@@ -251,6 +250,12 @@ class ExecuteContainer {
     }
 
     return result;
+  }
+
+  clearAndScheduleTask() {
+    this.reports = [];
+    this.#processedAccounts.clear();
+    this.scheduleTask();
   }
 }
 
