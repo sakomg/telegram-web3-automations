@@ -108,7 +108,16 @@ class ExecuteContainer {
       return [];
     }
 
-    const browser = await puppeteer.connect({ browserWSEndpoint: wsEndpoint, defaultViewport: null });
+    let browser = null;
+
+    try {
+      browser = await puppeteer.connect({ browserWSEndpoint: wsEndpoint, defaultViewport: null });
+    } catch (e) {
+      logger.error(`Cannot connect to ws: ${wsEndpoint}`);
+      logger.error(e);
+      return [];
+    }
+
     const resultGames = [];
     for (const [appName, appUrl] of Object.entries(tgApp.games)) {
       if (appUrl) {
