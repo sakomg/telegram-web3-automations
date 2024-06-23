@@ -1,6 +1,6 @@
-import playBlumGame from './blum';
-import playHamsterGame from './hamster';
-import playIcebergGame from './iceberg';
+import playBlumGame from './blum.js';
+import playHamsterGame from './hamster.js';
+import playIcebergGame from './iceberg.js';
 
 export default async function playGame(appName, browser, appUrl) {
   const gameFunctions = {
