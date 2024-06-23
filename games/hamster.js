@@ -1,7 +1,9 @@
 import { delay, getRandomNumberBetween, randomDelay } from '../utils/delay.js';
 import { clearLocalStorage, clickButton, clickLinkWithHref, hasElement, waitForButton } from '../utils/puppeteerHelper.js';
-import logger from '../logger/logger.js';
 import { shuffleArray } from '../utils/shuffle.js';
+import logger from '../logger/logger.js';
+
+const MORSE_CODE = ['.', '-', '-', '.', ' ', '-', '-', '-', ' ', '-', '-', '-', ' ', '.', '-', '.', '.'];
 
 const playHamsterGame = async (browser, appUrl) => {
   logger.debug('🐹 Hamster Kombat');
@@ -37,6 +39,12 @@ const playHamsterGame = async (browser, appUrl) => {
     logger.debug(`💰 Initial balance ${initialBalance}`);
     result.BalanceBefore = initialBalance;
 
+    logger.info('Morse started');
+    await morseTask(page);
+    logger.info('Morse finished');
+
+    await delay(2500);
+
     logger.info('Clicker start', 'hamster');
     await startRandomClick(page, 25, 100, 220);
     logger.info('Clicker stopped', 'hamster');
@@ -53,12 +61,10 @@ const playHamsterGame = async (browser, appUrl) => {
       await processMineItems(page, balanceValue);
     }
 
-    let [balanceValue, profitPerHourValue] = await Promise.all(
-      extractValue(page, balanceSelector),
-      extractValue(page, profitPerHourSelector),
-    );
+    const balanceValueFinal = await extractValue(page, balanceSelector);
+    const profitPerHourValue = await extractValue(page, profitPerHourSelector);
 
-    result.BalanceAfter = balanceValue;
+    result.BalanceAfter = balanceValueFinal;
     result.ProfitPerHour = profitPerHourValue;
     await randomDelay(2000, 3500);
   } catch (error) {
@@ -247,6 +253,60 @@ async function checkEnergyAndClick(page, energyThreshold) {
     await page.mouse.down();
     await page.mouse.up();
   }
+}
+
+async function morseTask(page) {
+  await page.evaluate(() => {
+    const attractionItem = document.querySelector('.user-attraction-item:nth-child(2)');
+
+    if (attractionItem) {
+      attractionItem.click();
+    } else {
+      logger.info('Attraction item not found');
+    }
+  });
+
+  await delay(3000);
+
+  const energySelector = '.user-tap-energy p';
+  const buttonSelector = '.user-tap-button';
+  const energyText = await page.$eval(energySelector, (el) => el.textContent);
+  const energy = parseInt(energyText.split(' / ')[0]);
+  const takeThePrizeXpath = "//button[contains(., 'Take')]";
+
+  if (energy > 300) {
+    const button = await page.$(buttonSelector);
+    const buttonBox = await button.boundingBox();
+    const x = buttonBox.x + buttonBox.width / 2;
+    const y = buttonBox.y + buttonBox.height / 2;
+
+    const shortClickDuration = 200;
+    const longClickDuration = 600;
+    const clickInterval = 400;
+    const letterInterval = 800;
+
+    for (const symbol of MORSE_CODE) {
+      if (symbol === '.') {
+        await performClick(page, x, y, shortClickDuration);
+      } else if (symbol === '-') {
+        await performClick(page, x, y, longClickDuration);
+      } else if (symbol === ' ') {
+        await delay(letterInterval);
+      }
+      await delay(clickInterval);
+    }
+
+    if (await waitForButton(page, takeThePrizeXpath, 4000)) {
+      await clickButton(page, takeThePrizeXpath);
+    }
+  }
+}
+
+async function performClick(page, x, y, duration) {
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await delay(duration);
+  await page.mouse.up();
 }
 
 export default playHamsterGame;

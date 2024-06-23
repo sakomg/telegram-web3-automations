@@ -124,7 +124,7 @@ class ExecuteContainer {
         const resultGame = await playGame(appName, browser, appUrl);
         resultGames.push({ game: appName, data: resultGame });
       } else {
-        logger.warn(`There is no link to the [${appName}] app`);
+        logger.warning(`There is no link to the [${appName}] app`);
       }
     }
     await randomDelay(4, 8, 's');
