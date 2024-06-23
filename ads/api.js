@@ -1,7 +1,23 @@
 import axios from 'axios';
+import logger from '../logger/logger.js';
 
 const ADS_API_URL = 'http://local.adspower.net:50325/api';
 const ADS_API_VERSION = 'v1';
+
+export const adsOpenBrowser = async (userId) => {
+  try {
+    const response = await axios(`${ADS_API_URL}/${ADS_API_VERSION}/browser/start?user_id=${userId}`);
+    const data = response.data;
+    if (!data || !data.data || !data.data.ws || !data.data.ws.puppeteer) {
+      throw new Error('Invalid response structure: ws.puppeteer URL not found');
+    }
+
+    return data;
+  } catch (e) {
+    logger.error(`Error in adsOpenBrowser: ${e.message}`);
+    return null;
+  }
+};
 
 export const getGeneralProfile = async () => {
   const result = { success: true, message: null };

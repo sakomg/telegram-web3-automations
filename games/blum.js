@@ -46,7 +46,7 @@ const playBlumGame = async (browser, appUrl) => {
       result.BalanceAfter = currentBalance;
       result.Tickets = currentTickets;
     } catch (error) {
-      logger.error(`An error occurred during gameplay: ${error}`, 'blum');
+      logger.error(`An error occurred during game-play: ${error}`, 'blum');
     } finally {
       await clearLocalStorage(page);
       await page.close();
