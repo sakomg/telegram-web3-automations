@@ -25,7 +25,7 @@ const playHamsterGame = async (browser, appUrl) => {
 
     const thanksButtonXpath = "//button[contains(., 'Thank you')]";
     const balanceSelector = 'div.user-balance-large > div > p';
-    const profitPerHourSelector = 'div.user-stats-profit > div.price > div.price-value';
+    const profitPerHourSelector = 'div.price > div.price-value';
 
     if (await waitForButton(page, thanksButtonXpath, 3000)) {
       logger.info('> Thank you button found.');
@@ -52,8 +52,12 @@ const playHamsterGame = async (browser, appUrl) => {
       await delay(1500);
       await processMineItems(page, balanceValue);
     }
-    let balanceValue = await extractValue(page, balanceSelector);
-    let profitPerHourValue = await extractValue(page, profitPerHourSelector);
+
+    let [balanceValue, profitPerHourValue] = await Promise.all(
+      extractValue(page, balanceSelector),
+      extractValue(page, profitPerHourSelector),
+    );
+
     result.BalanceAfter = balanceValue;
     result.ProfitPerHour = profitPerHourValue;
     await randomDelay(2000, 3500);
@@ -185,7 +189,7 @@ async function processMineItems(page, initialBalance) {
       } catch (e) {
         logger.info('Error in clicking card: ' + e);
       } finally {
-        await randomDelay(1000, 1600);
+        await randomDelay(2000, 3000);
       }
     }
   }
@@ -204,7 +208,7 @@ async function navigateToTab(page, tabName) {
 
 async function startRandomClick(page, energyThreshold, minInterval, maxInterval) {
   let elapsedTime = 0;
-  let maxDuration = getRandomNumberBetween(1 * 60 * 1000, 1.5 * 60 * 1000);
+  let maxDuration = getRandomNumberBetween(1.1 * 60 * 1000, 1.3 * 60 * 1000);
   logger.info('Clicker duration: ' + (maxDuration / 60000).toFixed(2));
 
   const runLoop = async () => {
