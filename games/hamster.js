@@ -3,7 +3,8 @@ import { clearLocalStorage, clickButton, clickLinkWithHref, hasElement, waitForB
 import { shuffleArray } from '../utils/shuffle.js';
 import logger from '../logger/logger.js';
 
-const MORSE_CODE = ['.', '-', '-', '.', ' ', '-', '-', '-', ' ', '-', '-', '-', ' ', '.', '-', '.', '.'];
+// const MORSE_CODE = ['.', '-', '-', '.', ' ', '-', '-', '-', ' ', '-', '-', '-', ' ', '.', '-', '.', '.']; // 22.06
+const MORSE_CODE = ['.', '.', '.', ' ', '.', '-', '-', ' ', '.', '-', ' ', '.', '-', '-', '.']; // 23.06
 
 const playHamsterGame = async (browser, appUrl) => {
   logger.debug('🐹 Hamster Kombat');
@@ -285,19 +286,23 @@ async function morseTask(page) {
     const clickInterval = 400;
     const letterInterval = 800;
 
-    for (const symbol of MORSE_CODE) {
-      if (symbol === '.') {
-        await performClick(page, x, y, shortClickDuration);
-      } else if (symbol === '-') {
-        await performClick(page, x, y, longClickDuration);
-      } else if (symbol === ' ') {
-        await delay(letterInterval);
+    for (let i = 0; i < 2; i++) {
+      for (const symbol of MORSE_CODE) {
+        if (symbol === '.') {
+          await performClick(page, x, y, shortClickDuration);
+        } else if (symbol === '-') {
+          await performClick(page, x, y, longClickDuration);
+        } else if (symbol === ' ') {
+          await delay(letterInterval);
+        }
+        await delay(clickInterval);
       }
-      await delay(clickInterval);
-    }
 
-    if (await waitForButton(page, takeThePrizeXpath, 4000)) {
-      await clickButton(page, takeThePrizeXpath);
+      if (await waitForButton(page, takeThePrizeXpath, 4000)) {
+        await clickButton(page, takeThePrizeXpath);
+      }
+
+      await delay(3000);
     }
   }
 }
