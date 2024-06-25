@@ -15,11 +15,11 @@ const reportHeaders = {
 export default class ReportGenerator {
   generateReport = (gameType, data) => {
     const { headers } = reportHeaders[gameType];
-    const csvContent = this.jsonToCSVBuffer(data, headers);
+    const csvContent = this.jsonToCSV(data, headers);
     return Buffer.from(csvContent, 'utf8');
   };
 
-  jsonToCSVBuffer(jsonArray, columns) {
+  jsonToCSV(jsonArray, columns) {
     const csvRows = [];
 
     csvRows.push(columns.join(','));
