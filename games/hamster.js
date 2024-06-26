@@ -5,7 +5,8 @@ import logger from '../logger/logger.js';
 
 // const MORSE_CODE = ['.', '-', '-', '.', ' ', '-', '-', '-', ' ', '-', '-', '-', ' ', '.', '-', '.', '.']; // 22.06
 // const MORSE_CODE = ['.', '.', '.', ' ', '.', '-', '-', ' ', '.', '-', ' ', '.', '-', '-', '.']; // 23.06
-const MORSE_CODE = ['.', '-', ' ', '.', '-', '.', '.', ' ', '-']; // 24.06
+// const MORSE_CODE = ['.', '-', ' ', '.', '-', '.', '.', ' ', '-']; // 24.06
+const MORSE_CODE = ['.', '.', '-', '.', ' ', '-', '-', '-', ' ', '-', '-', ' ', '-', '-', '-']; // 25.06
 
 const playHamsterGame = async (browser, appUrl) => {
   logger.debug('🐹 Hamster Kombat');
