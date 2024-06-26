@@ -1,7 +1,7 @@
 import { delay, randomDelay } from '../utils/delay.js';
 import { clickButton, clickLinkWithHref, waitForButton } from '../utils/puppeteerHelper.js';
-import logger from '../logger/logger.js';
 import { shuffleArray } from '../utils/shuffle.js';
+import logger from '../logger/logger.js';
 
 const BLACK_LIST_TASKS = ['Invite 15 friends', 'Invite 10 friends', 'Invite 5 friends'];
 
@@ -16,7 +16,6 @@ const playIcebergGame = async (browser, appUrl) => {
   };
 
   const page = await browser.newPage();
-  await page.waitForNetworkIdle();
 
   page.on('popup', async (newPage) => {
     logger.info('New page opened. Closing it after 300ms delay');
@@ -24,11 +23,12 @@ const playIcebergGame = async (browser, appUrl) => {
     await newPage.close();
   });
 
-  await page.goto(appUrl, { waitUntil: 'networkidle0' });
   try {
+    await page.waitForNetworkIdle();
+    await page.goto(appUrl, { waitUntil: 'networkidle0' });
     await delay(1800);
     const initBalance = await extractBalance(page);
-    logger.debug(`💰 Start ::: ${initBalance}`);
+    logger.debug(`💰 Start > ${initBalance}`);
     result.BalanceBefore = initBalance;
     await checkAndClaim(page);
     await delay(1200);
@@ -37,7 +37,7 @@ const playIcebergGame = async (browser, appUrl) => {
     await clickLinkWithHref(page, '/');
     await delay(2000);
     const actualBalance = await extractBalance(page);
-    logger.debug(`💰 End ::: ${actualBalance}`);
+    logger.debug(`💰 End > ${actualBalance}`);
     result.BalanceAfter = actualBalance;
     await delay(1500);
   } catch (e) {

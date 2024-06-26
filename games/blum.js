@@ -5,6 +5,8 @@ import logger from '../logger/logger.js';
 const playBlumGame = async (browser, appUrl) => {
   logger.debug('🎮 Blum');
 
+  const page = await browser.newPage();
+
   const result = {
     Account: null,
     User: null,
@@ -13,10 +15,9 @@ const playBlumGame = async (browser, appUrl) => {
     Tickets: -1,
   };
 
-  const page = await browser.newPage();
-  await page.waitForNetworkIdle();
-
   try {
+    await page.waitForNetworkIdle();
+
     await Promise.all([page.goto(appUrl), page.waitForNavigation()]);
     await delay(7000);
 
