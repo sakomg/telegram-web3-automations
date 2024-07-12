@@ -7,7 +7,8 @@ import logger from '../logger/logger.js';
 // const MORSE_CODE = ['.', '.', '.', ' ', '.', '-', '-', ' ', '.', '-', ' ', '.', '-', '-', '.']; // 23.06
 // const MORSE_CODE = ['.', '-', ' ', '.', '-', '.', '.', ' ', '-']; // 24.06
 // const MORSE_CODE = ['.', '.', '-', '.', ' ', '-', '-', '-', ' ', '-', '-', ' ', '-', '-', '-']; // 25.06
-const MORSE_CODE = ['-', '-', ' ', '.', '.', ' ', '-', '.', ' ', '.', ' ', '.', '-', '.']; // 26.06
+// const MORSE_CODE = ['-', '-', ' ', '.', '.', ' ', '-', '.', ' ', '.', ' ', '.', '-', '.']; // 26.06
+const MORSE_CODE = ['-', '.', ' ', '-', '-', '-', ' ', '-', '.', '.', ' ', '.', ' ', '.', '.', '.'];
 
 const playHamsterGame = async (browser, appUrl) => {
   logger.debug('🐹 Hamster Kombat');
@@ -55,7 +56,7 @@ const playHamsterGame = async (browser, appUrl) => {
     await randomDelay(3, 5, 's');
 
     await clickLinkWithHref(page, '/clicker/mine');
-    const tabsToFarm = ['Markets', 'PR&Team', 'Legal'];
+    const tabsToFarm = ['Markets', 'PR&Team', 'Legal', 'Web3'];
     for (const tabName of shuffleArray(tabsToFarm)) {
       logger.info('> Tab to handle: ' + tabName);
       let balanceValue = await extractValue(page, balanceSelector);
