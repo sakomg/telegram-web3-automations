@@ -5,7 +5,8 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "node main.js"
+    "start": "node main.js",
+    "copy:env": "cp .env.example .env"
   },
   "keywords": [
     "tg",
