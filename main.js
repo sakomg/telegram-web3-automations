@@ -94,13 +94,13 @@ class ExecuteContainer {
 
     logger.debug(`👍 #${tgApp.id}`);
 
-    const updateResult = await updateProfileProxy(profileUserId, tgApp.proxy);
-    if (!updateResult.success) {
-      logger.error(updateResult.message);
-      return [];
-    }
+    // const updateResult = await updateProfileProxy(profileUserId, tgApp.proxy);
+    // if (!updateResult.success) {
+    //   logger.error(updateResult.message);
+    //   return [];
+    // }
 
-    logger.info(`Successfully updated proxy: ${JSON.stringify(updateResult.message)}`);
+    // logger.info(`Successfully updated proxy: ${JSON.stringify(updateResult.message)}`);
 
     const wsEndpoint = await this.establishWsEndpoint(profileUserId, 3);
     if (!wsEndpoint) {
